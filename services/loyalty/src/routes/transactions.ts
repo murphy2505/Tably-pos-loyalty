@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { recordTransaction, listTransactions } from '../services/transactionService.js';
+import { recordTransaction, listTransactions } from '../services/transactionService';
 
 const router = Router();
 

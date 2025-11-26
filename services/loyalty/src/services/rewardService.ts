@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
-import { redemptions } from '../db/memory.js';
-import { RewardRedemption } from '../models/types.js';
-import { findCustomer } from './customerService.js';
+import { redemptions } from '../db/memory';
+import { RewardRedemption } from '../models/types';
+import { findCustomer } from './customerService';
 
 export function redeemPoints(customerId: string, points: number): RewardRedemption {
   const customer = findCustomer(customerId);

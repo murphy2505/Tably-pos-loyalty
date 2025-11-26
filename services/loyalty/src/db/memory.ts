@@ -1,4 +1,4 @@
-import { Customer, Transaction, RewardRedemption } from '../models/types.js';
+import { Customer, Transaction, RewardRedemption } from '../models/types';
 
 export const customers: Customer[] = [];
 export const transactions: Transaction[] = [];
