@@ -1,5 +1,6 @@
 {
   "name": "tably-pos-loyalty-monorepo",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev:loyalty": "cd services/loyalty && npm run dev",
