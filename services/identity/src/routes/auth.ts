@@ -3,6 +3,9 @@ import { login, register, getUserFromToken } from '../services/authService';
 
 const router = Router();
 
+// TODO: Add rate limiting middleware to protect against brute-force attacks
+// Example: Use express-rate-limit package with appropriate limits for auth routes
+
 /**
  * POST /auth/login
  * Login with email and password

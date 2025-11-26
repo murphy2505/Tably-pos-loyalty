@@ -39,5 +39,5 @@ export interface RegisterPayload {
  */
 export interface AuthResponse {
   token: string;
-  user: Omit<User, 'id'> & { id: string };
+  user: User;
 }
