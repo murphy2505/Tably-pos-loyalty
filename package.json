@@ -6,6 +6,10 @@
     "dev:loyalty": "cd services/loyalty && npm run dev",
     "build:loyalty": "cd services/loyalty && npm run build",
     "start:loyalty": "cd services/loyalty && npm start",
-    "test:loyalty": "cd services/loyalty && npm test"
+    "test:loyalty": "cd services/loyalty && npm test",
+    "dev:identity": "cd services/identity && npm run dev",
+    "build:identity": "cd services/identity && npm run build",
+    "start:identity": "cd services/identity && npm start",
+    "test:identity": "cd services/identity && npm test"
   }
 }
