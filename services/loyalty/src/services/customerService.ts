@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
-import { customers } from '../db/memory.js';
-import { Customer } from '../models/types.js';
+import { customers } from '../db/memory';
+import { Customer } from '../models/types';
 
 export function createCustomer(name: string): Customer {
   const customer: Customer = { id: uuid(), name, points: 0, createdAt: new Date() };

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { redeemPoints, listRedemptions } from '../services/rewardService.js';
+import { redeemPoints, listRedemptions } from '../services/rewardService';
 
 const router = Router();
 

@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
-import { transactions, POINT_RATE } from '../db/memory.js';
-import { Transaction } from '../models/types.js';
-import { findCustomer } from './customerService.js';
+import { transactions, POINT_RATE } from '../db/memory';
+import { Transaction } from '../models/types';
+import { findCustomer } from './customerService';
 
 export function recordTransaction(customerId: string, amount: number): Transaction {
   const customer = findCustomer(customerId);
