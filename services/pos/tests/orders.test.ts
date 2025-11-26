@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../src/index';
-import { createTestToken } from '../src/middleware/authMiddleware';
+import { createTestToken } from './testHelpers';
 import { clearAllData } from '../src/db/memory';
 
 describe('POS Orders API', () => {

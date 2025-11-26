@@ -50,7 +50,3 @@ export function authMiddleware(
   req.userId = payload.userId;
   next();
 }
-
-export function createTestToken(tenantId: string, userId: string): string {
-  return Buffer.from(JSON.stringify({ tenantId, userId })).toString('base64');
-}
