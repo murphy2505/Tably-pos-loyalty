@@ -10,6 +10,10 @@
     "dev:identity": "cd services/identity && npm run dev",
     "build:identity": "cd services/identity && npm run build",
     "start:identity": "cd services/identity && npm start",
-    "test:identity": "cd services/identity && npm test"
+    "test:identity": "cd services/identity && npm test",
+    "dev:pos": "cd services/pos && npm run dev",
+    "build:pos": "cd services/pos && npm run build",
+    "start:pos": "cd services/pos && npm start",
+    "test:pos": "cd services/pos && npm test"
   }
 }
