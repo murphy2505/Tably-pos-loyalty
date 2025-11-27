@@ -2,6 +2,8 @@ import express from 'express';
 import customersRouter from './routes/customers';
 import transactionsRouter from './routes/transactions';
 import rewardsRouter from './routes/rewards';
+import walletsRouter from './routes/wallets';
+import historyRouter from './routes/history';
 
 export const app = express();
 app.use(express.json());
@@ -9,6 +11,10 @@ app.use(express.json());
 app.use('/customers', customersRouter);
 app.use('/transactions', transactionsRouter);
 app.use('/rewards', rewardsRouter);
+
+// Nieuwe routers
+app.use('/wallets', walletsRouter);
+app.use('/history', historyRouter);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 

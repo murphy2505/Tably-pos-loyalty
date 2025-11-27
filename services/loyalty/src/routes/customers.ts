@@ -1,23 +1,51 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { createCustomer, listCustomers } from '../services/customerService';
+import { createCustomer as createCustomerSvc, listCustomers, getCustomerDetail } from '../services/customersService';
 
 const router = Router();
 
+// POST /customers (blijft bruikbaar, uitgebreid met phone/email)
 router.post('/', (req, res) => {
-  const schema = z.object({ name: z.string().min(1) });
+  const schema = z.object({
+    name: z.string().min(1),
+    phone: z.string().min(3),
+    email: z.string().email().optional(),
+  });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-  try {
-    const customer = createCustomer(parsed.data.name);
-    res.status(201).json(customer);
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
-  }
+  (async () => {
+    try {
+      const customer = await createCustomerSvc(parsed.data.name, parsed.data.phone, parsed.data.email);
+      res.status(201).json(customer);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  })();
 });
 
+// GET /customers → lijst (name, phone, lastVisit, totalPoints, totalVisits)
 router.get('/', (_req, res) => {
-  res.json(listCustomers());
+  (async () => {
+    try {
+      const list = await listCustomers();
+      res.json(list);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  })();
+});
+
+// GET /customers/:id → { customer, wallets, history (laatste 5) }
+router.get('/:id', (req, res) => {
+  (async () => {
+    try {
+      const detail = await getCustomerDetail(req.params.id);
+      if (!detail) return res.status(404).json({ error: 'Customer not found' });
+      res.json(detail);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  })();
 });
 
 export default router;
