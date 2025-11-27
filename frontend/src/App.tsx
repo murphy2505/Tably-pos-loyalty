@@ -1,63 +1,35 @@
-import { Router } from 'express';
-import { z } from 'zod';
-import { createCustomer as createCustomerSvc, listCustomers, getCustomerDetail } from '../services/customersService';
-import { CustomersPage } from './pages/customers/CustomersPage';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
 
-const router = Router();
+function App() {
+  const [count, setCount] = useState(0)
 
-// POST /customers (blijft bruikbaar, uitgebreid met phone/email)
-router.post('/', (req, res) => {
-  const schema = z.object({
-    name: z.string().min(1),
-    phone: z.string().min(3),
-    email: z.string().email().optional(),
-  });
-  const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-  (async () => {
-    try {
-      const customer = await createCustomerSvc(parsed.data.name, parsed.data.phone, parsed.data.email);
-      res.status(201).json(customer);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
-});
+  return (
+    <>
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.tsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
+    </>
+  )
+}
 
-// GET /customers → lijst (name, phone, lastVisit, totalPoints, totalVisits)
-router.get('/', (_req, res) => {
-  (async () => {
-    try {
-      const list = await listCustomers();
-      res.json(list);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
-});
-
-// GET /customers/:id → { customer, wallets, history (laatste 5) }
-router.get('/:id', (req, res) => {
-  (async () => {
-    try {
-      const detail = await getCustomerDetail(req.params.id);
-      if (!detail) return res.status(404).json({ error: 'Customer not found' });
-      res.json(detail);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
-});
-
-export const App = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/customers" element={<CustomersPage />} />
-      <Route path="/customers/:id" element={<CustomerDetail />} />
-    </Routes>
-  </BrowserRouter>
-);
-
-export default router;
+export default App
