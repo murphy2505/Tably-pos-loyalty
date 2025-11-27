@@ -1,6 +1,7 @@
 import type { Customer, HistoryEvent, Wallet } from "../types/customers";
 
-const BASE_URL = "http://localhost:3000";
+const API_HOST = window.location.hostname || "localhost";
+const BASE_URL = `http://${API_HOST}:3000`;
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
