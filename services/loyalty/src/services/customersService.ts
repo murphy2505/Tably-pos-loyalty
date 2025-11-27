@@ -2,8 +2,12 @@ import { v4 as uuid } from 'uuid';
 import { Customer } from '../models/customer';
 import { Wallet } from '../models/wallet';
 import { HistoryEvent } from '../models/history';
-import { walletsStore } from './walletsService';
-import { historyStore } from './historyService';
+// Make sure the file exists and exports walletsStore, or update the path if needed
+// Update the import path if the file is located elsewhere, e.g.:
+import { walletsStore } from '../services/walletsService';
+// Or create 'walletsService.ts' in the same directory and export 'walletsStore' from it.
+// Update the import path if 'historyService' is located elsewhere, e.g. '../services/historyService'
+import { historyStore } from '../services/historyService';
 
 // In-memory store
 export const customersStore: Customer[] = [
