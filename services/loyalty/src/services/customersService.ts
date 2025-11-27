@@ -6,7 +6,38 @@ import { walletsStore } from './walletsService';
 import { historyStore } from './historyService';
 
 // In-memory store
-export const customersStore: Customer[] = [];
+export const customersStore: Customer[] = [
+  {
+    id: 'cust-jan',
+    name: 'Jan Jansen',
+    phone: '0612345678',
+    email: undefined,
+    createdAt: new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString(), // ~60 dagen geleden
+    lastVisit: undefined, // wordt dynamisch berekend
+    totalVisits: 0,       // wordt dynamisch berekend
+    totalPoints: 0        // wordt dynamisch berekend
+  },
+  {
+    id: 'cust-petra',
+    name: 'Petra de Vries',
+    phone: '0622334455',
+    email: undefined,
+    createdAt: new Date(Date.now() - 45 * 24 * 3600 * 1000).toISOString(),
+    lastVisit: undefined,
+    totalVisits: 0,
+    totalPoints: 0
+  },
+  {
+    id: 'cust-ali',
+    name: 'Ali K.',
+    phone: '0611122233',
+    email: undefined,
+    createdAt: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
+    lastVisit: undefined,
+    totalVisits: 0,
+    totalPoints: 0
+  }
+];
 
 // Helpers
 function computeTotalPoints(customerId: string, wallets: Wallet[]): number {
