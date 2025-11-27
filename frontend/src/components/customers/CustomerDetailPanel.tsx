@@ -1,88 +1,77 @@
-import React from 'react';
-import { Customer, Wallet, HistoryEvent } from '../../types/customers';
+import type { Customer, Wallet, HistoryEvent } from "../../types/customers";
 
-interface CustomerDetailPanelProps {
+type Props = {
   customer?: Customer;
   wallets?: Wallet[];
   history?: HistoryEvent[];
-}
+};
 
-export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({
-  customer,
-  wallets = [],
-  history = []
-}) => {
+export function CustomerDetailPanel({ customer, wallets = [], history = [] }: Props) {
   if (!customer) {
     return (
-      <div className="flex items-center justify-center h-full text-sm text-gray-500">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: 12, color: "#666" }}>
         Selecteer een klant links…
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b bg-white sticky top-0">
-        <div className="flex items-start gap-4">
-          <div className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600">
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ padding: 16, borderBottom: "1px solid #eee", background: "#fff", position: "sticky", top: 0 }}>
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ width: 96, height: 96, background: "#e5e7eb", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#666" }}>
             QR
           </div>
           <div>
-            <h2 className="text-lg font-semibold">{customer.name}</h2>
-            <div className="text-sm text-gray-700">{customer.phone}</div>
-            {customer.email && <div className="text-xs text-gray-500">{customer.email}</div>}
+            <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{customer.name}</h2>
+            <div style={{ fontSize: 14, color: "#333" }}>{customer.phone}</div>
+            {customer.email && <div style={{ fontSize: 12, color: "#666" }}>{customer.email}</div>}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 p-4 border-b">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, padding: 16, borderBottom: "1px solid #eee" }}>
         <div>
-          <h3 className="text-sm font-semibold mb-2">Klantinfo</h3>
-          <ul className="text-xs space-y-1">
-            <li>Last visit: {customer.lastVisit ?? '—'}</li>
+          <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Klantinfo</h3>
+          <ul style={{ fontSize: 12, listStyle: "none", padding: 0, margin: 0 }}>
+            <li>Last visit: {customer.lastVisit ?? "—"}</li>
             <li>Total visits: {customer.totalVisits}</li>
             <li>Total points: {customer.totalPoints}</li>
           </ul>
         </div>
         <div>
-          <h3 className="text-sm font-semibold mb-2">Wallets</h3>
-          {wallets.length === 0 && <div className="text-xs text-gray-500">Geen wallets</div>}
-          <ul className="space-y-2">
-            {wallets.map(w => (
-              <li
-                key={w.id}
-                className="text-xs p-2 border rounded flex justify-between items-center bg-gray-50"
-              >
+          <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Wallets</h3>
+          {wallets.length === 0 && <div style={{ fontSize: 12, color: "#666" }}>Geen wallets</div>}
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {wallets.map((w) => (
+              <li key={w.id} style={{ fontSize: 12, padding: 8, border: "1px solid #eee", borderRadius: 6, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fafafa", marginBottom: 8 }}>
                 <span>{w.type}</span>
-                <span className="font-mono">{w.balance}</span>
+                <span style={{ fontFamily: "monospace" }}>{w.balance}</span>
               </li>
             ))}
           </ul>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <h3 className="text-sm font-semibold mb-2">Laatste activiteiten</h3>
-        {history.length === 0 && (
-          <div className="text-xs text-gray-500">Nog geen activiteiten</div>
-        )}
-        <ul className="space-y-2">
-          {history.map(ev => (
-            <li key={ev.id} className="text-xs p-2 rounded border bg-white">
-              <div className="flex justify-between">
-                <span className="font-medium">{ev.type}</span>
-                <span className="text-gray-500">
-                  {new Date(ev.timestamp).toLocaleDateString()} {new Date(ev.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+        <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Laatste activiteiten</h3>
+        {history.length === 0 && <div style={{ fontSize: 12, color: "#666" }}>Nog geen activiteiten</div>}
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {history.map((ev) => (
+            <li key={ev.id} style={{ fontSize: 12, padding: 8, border: "1px solid #eee", borderRadius: 6, background: "#fff", marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontWeight: 600 }}>{ev.type}</span>
+                <span style={{ color: "#666" }}>
+                  {new Date(ev.timestamp).toLocaleDateString()}{" "}
+                  {new Date(ev.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
-              <div className="text-gray-700">{ev.description}</div>
-              {ev.amount !== undefined && (
-                <div className="text-[10px] text-gray-500">Amount: {ev.amount}</div>
-              )}
+              <div style={{ color: "#333" }}>{ev.description}</div>
+              {ev.amount !== undefined && <div style={{ fontSize: 10, color: "#666" }}>Amount: {ev.amount}</div>}
             </li>
           ))}
         </ul>
       </div>
     </div>
   );
-};
+}
