@@ -4,8 +4,10 @@ import transactionsRouter from './routes/transactions';
 import rewardsRouter from './routes/rewards';
 import walletsRouter from './routes/wallets';
 import historyRouter from './routes/history';
+import cors from 'cors';
 
 export const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.use('/customers', customersRouter);
