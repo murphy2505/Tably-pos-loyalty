@@ -1,18 +1,18 @@
 import { v4 as uuid } from 'uuid';
-import type { HistoryEvent, HistoryType } from '../models/history';
+import { HistoryEvent, HistoryType } from '../models/history';
 
-// In-memory history store
 export const historyStore: HistoryEvent[] = [];
 
-export interface NewHistoryInput {
+export type NewHistoryEventInput = {
   customerId: string;
   walletId?: string;
   type: HistoryType;
   amount?: number;
   description: string;
-}
+  timestamp?: string;
+};
 
-export async function addHistoryEvent(input: NewHistoryInput): Promise<HistoryEvent> {
+export async function addHistoryEvent(input: NewHistoryEventInput): Promise<HistoryEvent> {
   const event: HistoryEvent = {
     id: uuid(),
     customerId: input.customerId,
@@ -20,14 +20,31 @@ export async function addHistoryEvent(input: NewHistoryInput): Promise<HistoryEv
     type: input.type,
     amount: input.amount,
     description: input.description,
-    timestamp: new Date().toISOString(),
+    timestamp: input.timestamp ?? new Date().toISOString(),
   };
-  historyStore.push(event);
+
+  historyStore.unshift(event);
   return event;
 }
 
-export async function getCustomerHistory(customerId: string): Promise<HistoryEvent[]> {
+export async function getHistoryForCustomer(customerId: string): Promise<HistoryEvent[]> {
   return historyStore
-    .filter(h => h.customerId === customerId)
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    .filter(e => e.customerId === customerId)
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+}
+
+export async function getHistoryForWallet(walletId: string): Promise<HistoryEvent[]> {
+  return historyStore
+    .filter(e => e.walletId === walletId)
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+}
+
+export async function getCustomerHistory(customerId: string): Promise<HistoryEvent[]> {
+  return getHistoryForCustomer(customerId);
 }

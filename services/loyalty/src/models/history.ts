@@ -1,12 +1,12 @@
 export type HistoryType =
-  | "POS_ORDER"
-  | "LOYALTY_ADD"
-  | "LOYALTY_REDEEM"
-  | "GIFTCARD_USE"
-  | "CALL"
-  | "NOTE";
+  | 'POS_ORDER'
+  | 'LOYALTY_ADD'
+  | 'LOYALTY_REDEEM'
+  | 'GIFTCARD_USE'
+  | 'CALL'
+  | 'NOTE';
 
-export interface HistoryEvent {
+export type HistoryEvent = {
   id: string;
   customerId: string;
   walletId?: string;
@@ -14,4 +14,4 @@ export interface HistoryEvent {
   amount?: number;
   description: string;
   timestamp: string;
-}
+};

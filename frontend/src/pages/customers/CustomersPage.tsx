@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Customer, Wallet, HistoryEvent } from "../../types/customers";
 import { CustomersList } from "../../components/customers/CustomersList";
 import { CustomerDetailPanel } from "../../components/customers/CustomerDetailPanel";

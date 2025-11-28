@@ -1,4 +1,3 @@
-import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { CustomersPage } from "./pages/customers/CustomersPage";
 import { DashboardLayout } from "./layouts/DashboardLayout";
