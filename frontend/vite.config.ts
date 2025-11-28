@@ -4,6 +4,12 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: true,   // <-- nodig zodat je iPad verbinding mag maken
+    proxy: {
+      "/loyalty-api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/loyalty-api/, ""),
+      },
+    },
   },
 });
