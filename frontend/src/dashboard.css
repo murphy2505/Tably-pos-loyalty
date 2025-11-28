@@ -1,124 +1,265 @@
-/* Shell */
+/* Root dashboard container */
 .dashboard-page {
   min-height: 100vh;
-  background: #0b1020;
+  background: #e5e7eb; /* licht grijs, duidelijk anders */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    sans-serif;
+  color: #111827;
 }
+
+/* Shell: sidebar + main */
 .dashboard-shell {
-  display: flex;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
   min-height: 100vh;
-  color: #0f172a;
 }
+
+/* Sidebar */
 .dashboard-sidebar {
-  width: 220px;
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #020617; /* heel donker blauw */
+  color: #e5e7eb;
+  padding: 1.5rem 1.25rem;
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  gap: 1.5rem;
 }
+
 .dashboard-brand {
-  font-weight: 700;
-  margin-bottom: 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f9fafb;
 }
+
 .dashboard-nav {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.25rem;
 }
+
 .dashboard-nav-item {
+  display: block;
+  padding: 0.6rem 0.9rem;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  color: #9ca3af;
   text-decoration: none;
-  color: #cbd5e1;
-  padding: 8px 10px;
-  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
-.dashboard-nav-item.active,
+
 .dashboard-nav-item:hover {
-  background: #1e293b;
-  color: #fff;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  transform: translateX(1px);
 }
+
+.dashboard-nav-item.active {
+  background: #22c55e; /* mint accent */
+  color: #022c22;
+  font-weight: 600;
+}
+
+/* Main area */
 .dashboard-main {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  background: #f5f7fb;
+  min-height: 100vh;
 }
+
+/* Header */
 .dashboard-header {
   height: 56px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 1.75rem;
+  background: rgba(248, 250, 252, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e5e7eb;
 }
+
 .dashboard-header-left {
   font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: #111827;
 }
+
 .dashboard-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-.env-chip {
-  font-size: 12px;
-  color: #64748b;
-}
-.user-chip {
-  font-size: 12px;
-  background: #0f172a;
-  color: #e2e8f0;
-  padding: 4px 8px;
-  border-radius: 9999px;
-}
-.dashboard-content {
-  flex: 1;
-  padding: 16px;
+  gap: 0.75rem;
 }
 
-/* Giftcards */
-.giftcards-page {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+.env-chip {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid #cbd5f5;
+  background: #eff6ff;
+  color: #1d4ed8;
 }
-.giftcards-card {
+
+.user-chip {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 9999px;
+  background: #020617;
+  color: #f9fafb;
+}
+
+/* Content area */
+.dashboard-content {
+  padding: 1.5rem 2rem 2rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Generic cards */
+.card {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.card + .card {
+  margin-top: 0.75rem;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #111827;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+/* Customer list page */
+.customer-list-page h1 {
+  font-size: 1.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.customer-list-page p {
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+.customer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.customer-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.75rem;
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 24px;
-  margin-top: 24px;
-  width: 100%;
-  max-width: 640px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.1s ease, box-shadow 0.1s ease,
+    border-color 0.1s ease;
 }
-.giftcards-title {
-  margin: 0 0 8px 0;
-  font-size: 20px;
+
+.customer-list-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.07);
+  border-color: #c4d4ff;
 }
-.giftcards-subtitle {
-  margin: 0 0 16px 0;
-  color: #475569;
-  font-size: 14px;
+
+.customer-list-item-name {
+  font-weight: 500;
 }
-.giftcards-input-row {
-  display: flex;
-  gap: 8px;
+
+.customer-list-item-meta {
+  font-size: 0.8rem;
+  color: #6b7280;
 }
-.giftcards-input {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 14px;
+
+/* Customer detail page */
+.customer-detail-page h1 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
 }
-.giftcards-button {
-  background: #0ea5e9;
-  color: white;
+
+.customer-detail-page h2 {
+  font-size: 1.1rem;
+  margin: 1.2rem 0 0.5rem;
+}
+
+.link-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: #1d4ed8;
+  background: none;
   border: none;
-  border-radius: 8px;
-  padding: 10px 14px;
+  padding: 0;
   cursor: pointer;
 }
-.giftcards-button:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
+
+.link-back:hover {
+  text-decoration: underline;
+}
+
+.wallet-card {
+  font-size: 0.9rem;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.85rem;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+/* Responsiveness: op smalle schermen sidebar boven de main stapelen */
+@media (max-width: 900px) {
+  .dashboard-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-sidebar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dashboard-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+.pos-page {
+  min-height: calc(100vh - 56px); /* onder de header */
+  display: flex;
+  flex-direction: column;
 }
