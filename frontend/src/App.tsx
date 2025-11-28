@@ -4,6 +4,7 @@ import "./dashboard.css";
 import DashboardLayout from "./css/layouts/DashboardLayout";
 
 import CustomersPage from "./pages/customers/CustomersPage";
+import CustomerDetailPage from "./pages/customers/CustomerDetailPage";
 import PosPage from "./pages/pos/PosPage";
 import LoyaltyPage from "./pages/loyalty/LoyaltyPage";
 import SettingsPage from "./pages/settings/SettingsPage";
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<CustomersPage />} />
           <Route path="customers" element={<CustomersPage />} />
+          <Route path="customers/:id" element={<CustomerDetailPage />} />
           <Route path="pos" element={<PosPage />} />
           <Route path="loyalty" element={<LoyaltyPage />} />
           <Route path="settings" element={<SettingsPage />} />

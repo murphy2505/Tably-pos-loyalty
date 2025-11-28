@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchCustomers, type Customer } from "../../services/loyaltyClient";
 
 export default function CustomersPage() {
@@ -38,8 +39,10 @@ export default function CustomersPage() {
         <ul>
           {customers.map((c) => (
             <li key={c.id}>
-              <strong>{c.name}</strong>{" "}
-              {c.phone && <span>({c.phone})</span>}
+              <Link to={`/dashboard/customers/${c.id}`} style={{ textDecoration: "none" }}>
+                <strong>{c.name}</strong>{" "}
+                {c.phone && <span>({c.phone})</span>}
+              </Link>
             </li>
           ))}
         </ul>
