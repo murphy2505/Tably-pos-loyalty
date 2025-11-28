@@ -45,6 +45,7 @@ export async function getHistoryForWallet(walletId: string): Promise<HistoryEven
     );
 }
 
+// 👉 Dit is de alias waar jouw route om vraagt
 export async function getCustomerHistory(customerId: string): Promise<HistoryEvent[]> {
   return getHistoryForCustomer(customerId);
 }
