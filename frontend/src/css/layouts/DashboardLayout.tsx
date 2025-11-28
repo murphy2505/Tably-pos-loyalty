@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
 export default function DashboardLayout() {
@@ -7,20 +6,14 @@ export default function DashboardLayout() {
       <aside className="dashboard-sidebar">
         <div className="dashboard-brand">Tablie Dashboard</div>
         <nav className="dashboard-nav">
-          <NavLink to="/dashboard" end className="dashboard-nav-item">
-            Dashboard
+          <NavLink to="/dashboard/customers" className="dashboard-nav-item">
+            Customers
           </NavLink>
           <NavLink to="/dashboard/pos" className="dashboard-nav-item">
             POS
           </NavLink>
-          <NavLink to="/dashboard/customers" className="dashboard-nav-item">
-            Customers
-          </NavLink>
           <NavLink to="/dashboard/loyalty" className="dashboard-nav-item">
             Loyalty
-          </NavLink>
-          <NavLink to="/dashboard/giftcards" className="dashboard-nav-item">
-            Giftcards
           </NavLink>
           <NavLink to="/dashboard/settings" className="dashboard-nav-item">
             Settings
@@ -36,7 +29,6 @@ export default function DashboardLayout() {
             <span className="user-chip">Mervyn</span>
           </div>
         </header>
-
         <section className="dashboard-content">
           <Outlet />
         </section>
