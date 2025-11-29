@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import "../../styles/pos/pos.css";
 import type { PosProduct, PosOrderLine, PosOrderTotals } from "../../types/pos";
 import { fetchPosProducts, calculateTotals } from "../../services/posService";
-import { createPosOrder, type PaymentMethod as BackendPaymentMethod } from "../../services/ordersService";
+import { createPosOrder, type PaymentMethod } from "../../services/ordersService";
+import { createKdsTicket } from "../../services/kdsService";
 
 const categories = ["Populair", "Friet", "Snacks", "Menu's", "Drinken"];
 
@@ -30,12 +31,11 @@ export default function PosPage() {
 
   // Betaling
   const [isPaying, setIsPaying] = useState<boolean>(false);
-  const [paymentMethod, setPaymentMethod] = useState<BackendPaymentMethod | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
 
   // Parkeer-state
   const [parkedOrders, setParkedOrders] = useState<ParkedOrder[]>([]);
-  const [currentTicketNumber, setCurrentTicketNumber] =
-    useState<number>(123);
+  const [currentTicketNumber, setCurrentTicketNumber] = useState<number>(123);
 
   // Products ophalen
   useEffect(() => {
@@ -157,6 +157,35 @@ export default function PosPage() {
 
       return prev.filter((p) => p.id !== orderId);
     });
+  }
+
+  async function handleConfirmPayment() {
+    if (!paymentMethod) return;
+
+    try {
+      // 1. Order opslaan in backend
+      const result = await createPosOrder({
+        lines: orderLines,
+        totals,
+        paymentMethod,
+        source: "counter",
+      });
+
+      // 2. KDS ticket aanmaken
+      await createKdsTicket({
+        id: result.orderId,
+        ticketNumber: result.ticketNumber,
+        items: orderLines.map((l) => ({ name: l.name, qty: l.qty })),
+      });
+
+      console.log("Order + KDS ticket created:", result);
+    } catch (e) {
+      console.error("Failed to process order", e);
+    } finally {
+      setIsPaying(false);
+      setPaymentMethod(null);
+      handleClearOrder();
+    }
   }
 
   return (
@@ -426,24 +455,7 @@ export default function PosPage() {
                 type="button"
                 className="pos-pay-confirm"
                 disabled={!paymentMethod}
-                onClick={async () => {
-                  if (!paymentMethod) return;
-                  try {
-                    const result = await createPosOrder({
-                      lines: orderLines,
-                      totals,
-                      paymentMethod,
-                      source: "counter",
-                    });
-                    console.log("Order created:", result);
-                  } catch (e) {
-                    console.error("Failed to create order", e);
-                  } finally {
-                    setIsPaying(false);
-                    setPaymentMethod(null);
-                    handleClearOrder();
-                  }
-                }}
+                onClick={handleConfirmPayment}
               >
                 Bevestig betaling
               </button>

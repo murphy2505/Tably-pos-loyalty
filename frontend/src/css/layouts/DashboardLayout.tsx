@@ -23,6 +23,14 @@ export default function DashboardLayout() {
             POS
           </NavLink>
           <NavLink
+            to="/dashboard/kds"
+            className={({ isActive }) =>
+              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
+            }
+          >
+            KDS
+          </NavLink>
+          <NavLink
             to="/dashboard/loyalty"
             className={({ isActive }) =>
               "sidebar-link" + (isActive ? " sidebar-link--active" : "")

@@ -1,8 +1,9 @@
 import express from 'express';
 import tablesRouter from './routes/tables';
-import ordersRouter from './routes/orders';
 import healthRouter from './routes/health';
 import { authMiddleware } from './middleware/authMiddleware';
+
+// NEW router
 import ordersRoutes from "./routes/ordersRoutes";
 
 export const app = express();
@@ -11,9 +12,11 @@ app.use(express.json());
 // Health endpoint - no auth required
 app.use('/pos/health', healthRouter);
 
-// Protected routes - require auth
+// NEW: Use the new orders API WITHOUT auth (for now)
+app.use('/pos/orders', ordersRoutes);
+
+// Protected routes (tables for example)
 app.use('/pos/tables', authMiddleware, tablesRouter);
-app.use('/pos/orders', authMiddleware, ordersRouter);
 
 const PORT = process.env.PORT || 4002;
 
