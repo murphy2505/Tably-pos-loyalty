@@ -16,6 +16,7 @@ export default function PosPage() {
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>("Populair");
 
   // Effects
   useEffect(() => {
@@ -64,19 +65,26 @@ export default function PosPage() {
     setTotals({ subtotal: 0, discount: 0, total: 0 });
   }
 
+  const filteredProducts =
+    activeCategory === "Populair"
+      ? products
+      : products.filter((p) => p.category === activeCategory);
+
   return (
     <div className="pos-page">
       <div className="pos-main">
         {/* LINKERKANT – producten */}
         <section className="pos-left">
           <div className="pos-category-bar">
-            {categories.map((c, index) => (
+            {categories.map((c) => (
               <button
                 key={c}
                 className={
-                  "pos-category-button" + (index === 0 ? " is-active" : "")
+                  "pos-category-button" +
+                  (activeCategory === c ? " is-active" : "")
                 }
                 type="button"
+                onClick={() => setActiveCategory(c)}
               >
                 {c}
               </button>
@@ -95,7 +103,7 @@ export default function PosPage() {
               )}
               {!loading &&
                 !error &&
-                products.map((p) => (
+                filteredProducts.map((p) => (
                   <button
                     key={p.id}
                     className="pos-product-card"
