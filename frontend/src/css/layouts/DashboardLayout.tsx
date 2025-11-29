@@ -9,7 +9,7 @@ export default function DashboardLayout() {
           <NavLink
             to="/dashboard/customers"
             className={({ isActive }) =>
-              "dashboard-nav-item" + (isActive ? " active" : "")
+              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
             }
           >
             Customers
@@ -17,7 +17,7 @@ export default function DashboardLayout() {
           <NavLink
             to="/dashboard/pos"
             className={({ isActive }) =>
-              "dashboard-nav-item" + (isActive ? " active" : "")
+              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
             }
           >
             POS
@@ -25,7 +25,7 @@ export default function DashboardLayout() {
           <NavLink
             to="/dashboard/loyalty"
             className={({ isActive }) =>
-              "dashboard-nav-item" + (isActive ? " active" : "")
+              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
             }
           >
             Loyalty
@@ -33,7 +33,7 @@ export default function DashboardLayout() {
           <NavLink
             to="/dashboard/settings"
             className={({ isActive }) =>
-              "dashboard-nav-item" + (isActive ? " active" : "")
+              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
             }
           >
             Settings
