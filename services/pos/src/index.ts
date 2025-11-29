@@ -3,6 +3,7 @@ import tablesRouter from './routes/tables';
 import ordersRouter from './routes/orders';
 import healthRouter from './routes/health';
 import { authMiddleware } from './middleware/authMiddleware';
+import ordersRoutes from "./routes/ordersRoutes";
 
 export const app = express();
 app.use(express.json());

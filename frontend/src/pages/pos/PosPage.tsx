@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "../../styles/pos/pos.css";
 import type { PosProduct, PosOrderLine, PosOrderTotals } from "../../types/pos";
 import { fetchPosProducts, calculateTotals } from "../../services/posService";
+import { createPosOrder, type PaymentMethod as BackendPaymentMethod } from "../../services/ordersService";
 
 const categories = ["Populair", "Friet", "Snacks", "Menu's", "Drinken"];
 
@@ -29,9 +30,7 @@ export default function PosPage() {
 
   // Betaling
   const [isPaying, setIsPaying] = useState<boolean>(false);
-  const [paymentMethod, setPaymentMethod] = useState<
-    "cash" | "card" | "sumup" | "qr" | null
-  >(null);
+  const [paymentMethod, setPaymentMethod] = useState<BackendPaymentMethod | null>(null);
 
   // Parkeer-state
   const [parkedOrders, setParkedOrders] = useState<ParkedOrder[]>([]);
@@ -422,20 +421,28 @@ export default function PosPage() {
               >
                 Annuleer
               </button>
+
               <button
                 type="button"
                 className="pos-pay-confirm"
                 disabled={!paymentMethod}
-                onClick={() => {
-                  console.log(
-                    "Paid with:",
-                    paymentMethod,
-                    "Amount:",
-                    totals.total
-                  );
-                  setIsPaying(false);
-                  setPaymentMethod(null);
-                  handleClearOrder();
+                onClick={async () => {
+                  if (!paymentMethod) return;
+                  try {
+                    const result = await createPosOrder({
+                      lines: orderLines,
+                      totals,
+                      paymentMethod,
+                      source: "counter",
+                    });
+                    console.log("Order created:", result);
+                  } catch (e) {
+                    console.error("Failed to create order", e);
+                  } finally {
+                    setIsPaying(false);
+                    setPaymentMethod(null);
+                    handleClearOrder();
+                  }
                 }}
               >
                 Bevestig betaling
