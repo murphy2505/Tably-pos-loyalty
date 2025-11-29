@@ -5,8 +5,15 @@ import { fetchPosProducts, calculateTotals } from "../../services/posService";
 
 const categories = ["Populair", "Friet", "Snacks", "Menu's", "Drinken"];
 
+type ParkedOrder = {
+  id: string;
+  label: string;
+  lines: PosOrderLine[];
+  totals: PosOrderTotals;
+};
+
 export default function PosPage() {
-  // State
+  // Product- en orderstate
   const [products, setProducts] = useState<PosProduct[]>([]);
   const [orderLines, setOrderLines] = useState<PosOrderLine[]>([]);
   const [totals, setTotals] = useState<PosOrderTotals>({
@@ -14,18 +21,24 @@ export default function PosPage() {
     discount: 0,
     total: 0,
   });
+
+  // UI-state
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("Populair");
 
-  // NEW payment state
+  // Betaling
   const [isPaying, setIsPaying] = useState<boolean>(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "sumup" | "qr" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cash" | "card" | "sumup" | "qr" | null
+  >(null);
 
+  // Parkeer-state
   const [parkedOrders, setParkedOrders] = useState<ParkedOrder[]>([]);
-  const [currentTicketNumber, setCurrentTicketNumber] = useState<number>(123);
+  const [currentTicketNumber, setCurrentTicketNumber] =
+    useState<number>(123);
 
-  // Effects
+  // Products ophalen
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -73,6 +86,40 @@ export default function PosPage() {
     });
   }
 
+  function increaseQty(productId: number) {
+    setOrderLines((prev) => {
+      const next = prev.map((line) =>
+        line.productId === productId
+          ? { ...line, qty: line.qty + 1 }
+          : line
+      );
+      setTotals(calculateTotals(next));
+      return next;
+    });
+  }
+
+  function decreaseQty(productId: number) {
+    setOrderLines((prev) => {
+      const next = prev
+        .map((line) =>
+          line.productId === productId
+            ? { ...line, qty: line.qty - 1 }
+            : line
+        )
+        .filter((line) => line.qty > 0);
+      setTotals(calculateTotals(next));
+      return next;
+    });
+  }
+
+  function removeLine(productId: number) {
+    setOrderLines((prev) => {
+      const next = prev.filter((line) => line.productId !== productId);
+      setTotals(calculateTotals(next));
+      return next;
+    });
+  }
+
   function handleClearOrder() {
     setOrderLines([]);
     setTotals({ subtotal: 0, discount: 0, total: 0 });
@@ -92,8 +139,6 @@ export default function PosPage() {
     };
 
     setParkedOrders((prev) => [...prev, parked]);
-
-    // huidige bon leegmaken, maar ticketnummer alvast omhoog
     setCurrentTicketNumber((prev) => prev + 1);
     handleClearOrder();
   }
@@ -106,7 +151,6 @@ export default function PosPage() {
       setOrderLines(found.lines);
       setTotals(found.totals);
 
-      // ticketnummer zetten op id (optioneel, hier doen we het wel)
       const parsed = parseInt(found.id.replace("T", ""), 10);
       if (!Number.isNaN(parsed)) {
         setCurrentTicketNumber(parsed);
@@ -217,10 +261,28 @@ export default function PosPage() {
                     </div>
                   </div>
                   <div className="pos-order-line-controls">
-                    <button className="pos-qty-button" type="button" onClick={() => decreaseQty(l.productId)}>-</button>
+                    <button
+                      className="pos-qty-button"
+                      type="button"
+                      onClick={() => decreaseQty(l.productId)}
+                    >
+                      -
+                    </button>
                     <span className="pos-qty-value">{l.qty}</span>
-                    <button className="pos-qty-button" type="button" onClick={() => increaseQty(l.productId)}>+</button>
-                    <button className="pos-remove-button" type="button" onClick={() => removeLine(l.productId)}>🗑️</button>
+                    <button
+                      className="pos-qty-button"
+                      type="button"
+                      onClick={() => increaseQty(l.productId)}
+                    >
+                      +
+                    </button>
+                    <button
+                      className="pos-remove-button"
+                      type="button"
+                      onClick={() => removeLine(l.productId)}
+                    >
+                      🗑️
+                    </button>
                     <div className="pos-order-line-total">
                       € {(l.qty * l.price).toFixed(2)}
                     </div>
@@ -245,21 +307,30 @@ export default function PosPage() {
             </div>
           </div>
 
-          <button
-            className="pos-secondary-button"
-            onClick={handleClearOrder}
-            type="button"
-          >
-            Leeg bon
-          </button>
-          <button
-            className="pos-pay-button"
-            type="button"
-            onClick={() => setIsPaying(true)}
-            disabled={orderLines.length === 0}
-          >
-            Afrekenen
-          </button>
+          <div className="pos-order-actions">
+            <button
+              className="pos-secondary-button"
+              onClick={handleParkOrder}
+              type="button"
+            >
+              Parkeer bon
+            </button>
+            <button
+              className="pos-secondary-button"
+              onClick={handleClearOrder}
+              type="button"
+            >
+              Leeg bon
+            </button>
+            <button
+              className="pos-pay-button"
+              type="button"
+              onClick={() => setIsPaying(true)}
+              disabled={orderLines.length === 0}
+            >
+              Afrekenen
+            </button>
+          </div>
         </aside>
       </div>
 
@@ -287,41 +358,62 @@ export default function PosPage() {
           <div className="pos-pay-panel">
             <div className="pos-pay-header">
               <h3>Betaling</h3>
-              <button className="pos-pay-close" type="button" onClick={() => setIsPaying(false)}>✕</button>
+              <button
+                className="pos-pay-close"
+                type="button"
+                onClick={() => setIsPaying(false)}
+              >
+                ✕
+              </button>
             </div>
+
             <div className="pos-pay-amount">
               Te betalen: <strong>€ {totals.total.toFixed(2)}</strong>
             </div>
+
             <div className="pos-pay-methods">
               <button
                 type="button"
-                className={"pos-pay-method" + (paymentMethod === "cash" ? " is-selected" : "")}
+                className={
+                  "pos-pay-method" +
+                  (paymentMethod === "cash" ? " is-selected" : "")
+                }
                 onClick={() => setPaymentMethod("cash")}
               >
                 Contant
               </button>
               <button
                 type="button"
-                className={"pos-pay-method" + (paymentMethod === "card" ? " is-selected" : "")}
+                className={
+                  "pos-pay-method" +
+                  (paymentMethod === "card" ? " is-selected" : "")
+                }
                 onClick={() => setPaymentMethod("card")}
               >
                 Pin / Bankkaart
               </button>
               <button
                 type="button"
-                className={"pos-pay-method" + (paymentMethod === "sumup" ? " is-selected" : "")}
+                className={
+                  "pos-pay-method" +
+                  (paymentMethod === "sumup" ? " is-selected" : "")
+                }
                 onClick={() => setPaymentMethod("sumup")}
               >
                 SumUp terminal
               </button>
               <button
                 type="button"
-                className={"pos-pay-method" + (paymentMethod === "qr" ? " is-selected" : "")}
+                className={
+                  "pos-pay-method" +
+                  (paymentMethod === "qr" ? " is-selected" : "")
+                }
                 onClick={() => setPaymentMethod("qr")}
               >
                 QR / Wallet
               </button>
             </div>
+
             <div className="pos-pay-actions">
               <button
                 type="button"
@@ -335,7 +427,12 @@ export default function PosPage() {
                 className="pos-pay-confirm"
                 disabled={!paymentMethod}
                 onClick={() => {
-                  console.log("Paid with:", paymentMethod, "Amount:", totals.total);
+                  console.log(
+                    "Paid with:",
+                    paymentMethod,
+                    "Amount:",
+                    totals.total
+                  );
                   setIsPaying(false);
                   setPaymentMethod(null);
                   handleClearOrder();
