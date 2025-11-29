@@ -1,27 +1,68 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import "../../styles/pos/pos.css";
+import type { PosProduct, PosOrderLine, PosOrderTotals } from "../../types/pos";
+import { fetchPosProducts, calculateTotals } from "../../services/posService";
 
-const dummyProducts = [
-  { id: 1, name: "Friet groot", price: 3.8, badge: "Meest verkocht" },
-  { id: 2, name: "Friet speciaal", price: 4.5 },
-  { id: 3, name: "Kroket", price: 2.3 },
-  { id: 4, name: "Frikandel speciaal", price: 3.1 },
-  { id: 5, name: "Bamischijf", price: 2.7 },
-  { id: 6, name: "Cola 33cl", price: 2.6 },
-  { id: 7, name: "Fanta 33cl", price: 2.6 },
-  { id: 8, name: "Milkshake aardbei", price: 4.2 },
-];
-
-const dummyLines = [
-  { id: 1, name: "Friet groot", qty: 2, price: 3.8 },
-  { id: 2, name: "Frikandel speciaal", qty: 1, price: 3.1 },
-  { id: 3, name: "Cola 33cl", qty: 2, price: 2.6 },
-];
+const categories = ["Populair", "Friet", "Snacks", "Menu's", "Drinken"];
 
 export default function PosPage() {
-  const subtotal = dummyLines.reduce((sum, l) => sum + l.qty * l.price, 0);
-  const discount = 0;
-  const total = subtotal - discount;
+  // State
+  const [products, setProducts] = useState<PosProduct[]>([]);
+  const [orderLines, setOrderLines] = useState<PosOrderLine[]>([]);
+  const [totals, setTotals] = useState<PosOrderTotals>({
+    subtotal: 0,
+    discount: 0,
+    total: 0,
+  });
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Effects
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchPosProducts();
+        setProducts(data);
+      } catch {
+        setError("Kon producten niet laden");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // Handlers
+  function onProductClick(product: PosProduct) {
+    setOrderLines((prev) => {
+      const idx = prev.findIndex((l) => l.productId === product.id);
+      let next: PosOrderLine[];
+
+      if (idx >= 0) {
+        next = [...prev];
+        next[idx] = { ...next[idx], qty: next[idx].qty + 1 };
+      } else {
+        next = [
+          ...prev,
+          {
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            qty: 1,
+          },
+        ];
+      }
+
+      setTotals(calculateTotals(next));
+      return next;
+    });
+  }
+
+  function handleClearOrder() {
+    setOrderLines([]);
+    setTotals({ subtotal: 0, discount: 0, total: 0 });
+  }
 
   return (
     <div className="pos-page">
@@ -29,29 +70,50 @@ export default function PosPage() {
         {/* LINKERKANT – producten */}
         <section className="pos-left">
           <div className="pos-category-bar">
-            <button className="pos-category-button is-active">Populair</button>
-            <button className="pos-category-button">Friet</button>
-            <button className="pos-category-button">Snacks</button>
-            <button className="pos-category-button">Menu&apos;s</button>
-            <button className="pos-category-button">Drinken</button>
+            {categories.map((c, index) => (
+              <button
+                key={c}
+                className={
+                  "pos-category-button" + (index === 0 ? " is-active" : "")
+                }
+                type="button"
+              >
+                {c}
+              </button>
+            ))}
           </div>
 
           <div className="pos-products">
             <div className="pos-products-grid">
-              {dummyProducts.map((p) => (
-                <button key={p.id} className="pos-product-card">
-                  <div>
-                    <div className="pos-product-name">{p.name}</div>
-                    <div className="pos-product-price">
-                      € {p.price.toFixed(2)}
+              {loading && (
+                <div style={{ padding: 8, color: "#e5e7eb" }}>
+                  Producten laden...
+                </div>
+              )}
+              {error && !loading && (
+                <div style={{ padding: 8, color: "#e5e7eb" }}>{error}</div>
+              )}
+              {!loading &&
+                !error &&
+                products.map((p) => (
+                  <button
+                    key={p.id}
+                    className="pos-product-card"
+                    type="button"
+                    onClick={() => onProductClick(p)}
+                  >
+                    <div>
+                      <div className="pos-product-name">{p.name}</div>
+                      <div className="pos-product-price">
+                        € {p.price.toFixed(2)}
+                      </div>
+                      {p.badge && (
+                        <span className="pos-product-badge">{p.badge}</span>
+                      )}
                     </div>
-                    {p.badge && (
-                      <span className="pos-product-badge">{p.badge}</span>
-                    )}
-                  </div>
-                  <span className="pos-product-add-button">Toevoegen</span>
-                </button>
-              ))}
+                    <span className="pos-product-add-button">Toevoegen</span>
+                  </button>
+                ))}
             </div>
           </div>
         </section>
@@ -64,47 +126,72 @@ export default function PosPage() {
           </div>
 
           <div className="pos-order-lines">
-            {dummyLines.map((l) => (
-              <div key={l.id} className="pos-order-line">
-                <div>
-                  <div>{l.name}</div>
-                  <div className="pos-order-line-sub">
-                    {l.qty} × € {l.price.toFixed(2)}
+            {orderLines.length === 0 ? (
+              <div className="pos-order-empty">
+                (Nog geen items op de bon)
+              </div>
+            ) : (
+              orderLines.map((l) => (
+                <div key={l.productId} className="pos-order-line">
+                  <div>
+                    <div className="pos-order-line-name">{l.name}</div>
+                    <div className="pos-order-line-sub">
+                      {l.qty} × € {l.price.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="pos-order-line-total">
+                    € {(l.qty * l.price).toFixed(2)}
                   </div>
                 </div>
-                <div className="pos-order-line-total">
-                  € {(l.qty * l.price).toFixed(2)}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           <div className="pos-order-summary">
             <div className="pos-order-summary-row">
               <span>Subtotaal</span>
-              <span>€ {subtotal.toFixed(2)}</span>
+              <span>€ {totals.subtotal.toFixed(2)}</span>
             </div>
             <div className="pos-order-summary-row">
               <span>Korting</span>
-              <span>€ {discount.toFixed(2)}</span>
+              <span>€ {totals.discount.toFixed(2)}</span>
             </div>
             <div className="pos-order-summary-row total">
               <span>Totaal (incl. btw)</span>
-              <span>€ {total.toFixed(2)}</span>
+              <span>€ {totals.total.toFixed(2)}</span>
             </div>
           </div>
 
-          <button className="pos-pay-button">Afrekenen</button>
+          <button
+            className="pos-secondary-button"
+            onClick={handleClearOrder}
+            type="button"
+          >
+            Leeg bon
+          </button>
+          <button className="pos-pay-button" type="button">
+            Afrekenen
+          </button>
         </aside>
       </div>
 
       {/* ONDERBALK */}
       <div className="pos-bottom-bar">
-        <button className="pos-bottom-button">Bestellingen</button>
-        <button className="pos-bottom-button">Tafelbonnen</button>
-        <button className="pos-bottom-button">Planning</button>
-        <button className="pos-bottom-button">Cadeaukaart</button>
-        <button className="pos-bottom-button">Print laatste bon</button>
+        <button className="pos-bottom-button" type="button">
+          Bestellingen
+        </button>
+        <button className="pos-bottom-button" type="button">
+          Tafelbonnen
+        </button>
+        <button className="pos-bottom-button" type="button">
+          Planning
+        </button>
+        <button className="pos-bottom-button" type="button">
+          Cadeaukaart
+        </button>
+        <button className="pos-bottom-button" type="button">
+          Print laatste bon
+        </button>
       </div>
     </div>
   );
