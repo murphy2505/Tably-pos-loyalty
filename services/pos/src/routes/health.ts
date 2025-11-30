@@ -1,9 +1,13 @@
-import { Router, Response } from 'express';
+import { Router } from "express";
 
 const router = Router();
 
-router.get('/', (_req, res: Response) => {
-  res.json({ status: 'ok', service: 'pos' });
+// Simple health check for the POS service
+router.get("/", (_req, res) => {
+  res.json({
+    status: "ok",
+    service: "pos",
+  });
 });
 
 export default router;

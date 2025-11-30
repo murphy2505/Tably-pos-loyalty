@@ -31,6 +31,11 @@ interface StoredOrder {
 // Simpele in-memory store
 const orders: StoredOrder[] = [];
 
+// GET /pos/orders → alle orders (optioneel/simple lijst)
+router.get("/", (_req, res) => {
+  res.json(orders);
+});
+
 // POST /pos/orders
 router.post("/", (req, res) => {
   try {
@@ -80,6 +85,16 @@ router.post("/", (req, res) => {
     console.error("Error in /pos/orders:", e);
     return res.status(500).json({ error: e.message ?? "Unknown error" });
   }
+});
+
+// GET /pos/orders/:id
+router.get("/:id", (req, res) => {
+  const { id } = req.params;
+  const order = orders.find((o) => o.orderId === id);
+  if (!order) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+  res.json(order);
 });
 
 export default router;

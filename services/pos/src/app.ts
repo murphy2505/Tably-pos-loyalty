@@ -1,25 +1,17 @@
 import express from "express";
-import tablesRouter from "./routes/tables";
-import healthRouter from "./routes/health";
-import { authMiddleware } from "./middleware/authMiddleware";
-
-// POS-specific routes
 import ordersRoutes from "./routes/ordersRoutes";
 import kdsRoutes from "./routes/kdsRoutes";
+import healthRouter from "./routes/health";
+import tablesRouter from "./routes/tables";
+import authMiddleware from "./middleware/auth"; // zorg dat dit pad klopt
 
-export const app = express();
+const app = express();
 app.use(express.json());
 
-// Public health check
-app.use("/pos/health", healthRouter);
-
-// Orders (no auth for now)
+// Registratie van routers
 app.use("/pos/orders", ordersRoutes);
-
-// Kitchen Display System
 app.use("/pos/kds", kdsRoutes);
-
-// Protected POS routes
+app.use("/pos/health", healthRouter);
 app.use("/pos/tables", authMiddleware, tablesRouter);
 
 const PORT = process.env.PORT || 4002;

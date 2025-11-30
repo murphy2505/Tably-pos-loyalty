@@ -11,11 +11,6 @@ export default defineConfig({
         target: "http://localhost:4002",
         changeOrigin: true,
       },
-      // eventueel straks:
-      // "/loyalty": {
-      //   target: "http://localhost:4001",
-      //   changeOrigin: true,
-      // },
     },
   },
 });
