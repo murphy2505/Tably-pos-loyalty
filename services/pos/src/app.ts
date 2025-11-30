@@ -3,24 +3,19 @@ import ordersRoutes from "./routes/ordersRoutes";
 import kdsRoutes from "./routes/kdsRoutes";
 import healthRouter from "./routes/health";
 import tablesRouter from "./routes/tables";
+import authMiddleware from "./middleware/auth";
 
-export const app = express();
+const app = express();
+
+// Body parser vóór routes
 app.use(express.json());
 
-// Registratie van routers
+// POS routes
+app.use("/pos/health", healthRouter);
 app.use("/pos/orders", ordersRoutes);
 app.use("/pos/kds", kdsRoutes);
-app.use("/pos/health", healthRouter);
 
-// Voor nu ZONDER auth, gewoon open:
-app.use("/pos/tables", tablesRouter);
-
-const PORT = process.env.PORT || 4002;
-
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`POS service listening on port ${PORT}`);
-  });
-}
+// Optioneel protected
+app.use("/pos/tables", authMiddleware, tablesRouter);
 
 export default app;

@@ -6,7 +6,6 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Alles wat met /pos begint -> naar POS backend
       "/pos": {
         target: "http://localhost:4002",
         changeOrigin: true,
