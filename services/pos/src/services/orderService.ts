@@ -43,3 +43,24 @@ export function setOrderStatus(
 ): Order | undefined {
   return updateOrderStatus(tenantId, orderId, status);
 }
+
+export async function createCoreOrder(tenantId: string, locationId: string, tableId?: string) {
+  return { id: "order-1" };
+}
+export async function addCoreOrderItem(tenantId: string, orderId: string, item: { variantId: string; quantity: number; priceEach: number; discount?: number }) {
+  // TODO: verwerk ProductIngredient → voorraad SALE afboeken
+  return { ok: true };
+}
+export async function updateCoreOrderItem(tenantId: string, itemId: string, patch: Partial<{ quantity: number; priceEach: number; discount: number }>) {
+  return { ok: true };
+}
+export async function removeCoreOrderItem(tenantId: string, itemId: string) {
+  return { ok: true };
+}
+export async function payOrder(tenantId: string, orderId: string, payment: { method: "CASH" | "PIN" | "OTHER"; amount: number }) {
+  // TODO: markeer als PAID; betaling opslaan; tafel op FREE
+  return { status: "PAID" };
+}
+export async function cancelOrder(tenantId: string, orderId: string) {
+  return { status: "CANCELLED" };
+}

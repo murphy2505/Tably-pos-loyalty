@@ -1,84 +1,54 @@
-import { Router, Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
-import {
-  createOrder,
-  addItem,
-  listOrders,
-  listOrdersForTable,
-  setOrderStatus,
-} from '../services/orderService';
-import { Order } from '../models/types';
-
+import { Router } from "express";
 const router = Router();
 
-router.get('/', (req: AuthenticatedRequest, res: Response) => {
-  const tenantId = req.tenantId!;
-  const orders = listOrders(tenantId);
-  res.json(orders);
+router.post("/", async (_req, res) => {
+  try {
+    // nieuwe bon
+    res.status(201).json({ id: "order-1" });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-router.get('/tables/:tableId/orders', (req: AuthenticatedRequest, res: Response) => {
-  const tenantId = req.tenantId!;
-  const { tableId } = req.params;
-  const orders = listOrdersForTable(tenantId, tableId);
-  res.json(orders);
+router.post("/:id/items", async (_req, res) => {
+  try {
+    res.status(201).json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-router.post('/', (req: AuthenticatedRequest, res: Response) => {
-  const tenantId = req.tenantId!;
-  const { tableId, items } = req.body;
-
-  if (!tableId) {
-    res.status(400).json({ error: 'tableId is required' });
-    return;
+router.put("/items/:itemId", async (_req, res) => {
+  try {
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
   }
-
-  if (!Array.isArray(items)) {
-    res.status(400).json({ error: 'items must be an array' });
-    return;
-  }
-
-  const order = createOrder(tenantId, tableId, items);
-  res.status(201).json(order);
 });
 
-router.post('/:orderId/items', (req: AuthenticatedRequest, res: Response) => {
-  const tenantId = req.tenantId!;
-  const { orderId } = req.params;
-  const item = req.body;
-
-  if (!item.productId || !item.name || typeof item.quantity !== 'number' || typeof item.price !== 'number') {
-    res.status(400).json({ error: 'Item must have productId, name, quantity, and price' });
-    return;
+router.delete("/items/:itemId", async (_req, res) => {
+  try {
+    res.status(204).send();
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
   }
-
-  const order = addItem(tenantId, orderId, item);
-  if (!order) {
-    res.status(404).json({ error: 'Order not found' });
-    return;
-  }
-
-  res.json(order);
 });
 
-router.patch('/:orderId/status', (req: AuthenticatedRequest, res: Response) => {
-  const tenantId = req.tenantId!;
-  const { orderId } = req.params;
-  const { status } = req.body;
-
-  const validStatuses: Order['status'][] = ['open', 'in_kitchen', 'ready', 'completed'];
-  if (!validStatuses.includes(status)) {
-    res.status(400).json({ error: 'Invalid status. Must be one of: open, in_kitchen, ready, completed' });
-    return;
+router.post("/:id/pay", async (_req, res) => {
+  try {
+    // betaal: method CASH | PIN | OTHER
+    res.status(201).json({ status: "PAID" });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
   }
+});
 
-  const order = setOrderStatus(tenantId, orderId, status);
-  if (!order) {
-    res.status(404).json({ error: 'Order not found' });
-    return;
+router.post("/:id/cancel", async (_req, res) => {
+  try {
+    res.status(201).json({ status: "CANCELLED" });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
   }
-
-  res.json(order);
 });
 
 export default router;

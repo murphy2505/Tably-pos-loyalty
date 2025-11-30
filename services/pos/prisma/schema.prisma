@@ -1,0 +1,128 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  color     String?
+  order     Int
+  parentId  String?
+  products  Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  tenantId    String
+  categoryId  String
+  name        String
+  active      Boolean  @default(true)
+  vatRate     Float    @default(9)
+  tileColor   String?
+  tileIcon    String?
+  variants    ProductVariant[]
+
+  @@index([tenantId])
+  @@index([categoryId])
+}
+
+model ProductVariant {
+  id          String  @id @default(cuid())
+  productId   String
+  name        String
+  price       Float
+  sku         String?
+  pluCode     String?
+  active      Boolean @default(true)
+  ingredients ProductIngredient[]
+
+  @@index([productId])
+}
+
+model StockItem {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  unit      String
+  quantity  Float    @default(0)
+  minimum   Float    @default(0)
+  movements StockMovement[]
+
+  @@index([tenantId])
+}
+
+model ProductIngredient {
+  id          String  @id @default(cuid())
+  variantId   String
+  stockItemId String
+  amount      Float
+
+  @@index([variantId])
+  @@index([stockItemId])
+}
+
+model StockMovement {
+  id          String   @id @default(cuid())
+  stockItemId String
+  type        String   // PURCHASE | SALE | WASTE | ADJUSTMENT
+  amount      Float
+  createdAt   DateTime @default(now())
+
+  @@index([stockItemId])
+  @@index([createdAt])
+}
+
+model Table {
+  id         String   @id @default(cuid())
+  tenantId   String
+  locationId String
+  name       String
+  state      String   // FREE | SEATED | BILL_OPEN
+
+  @@index([tenantId, locationId])
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  tenantId   String
+  locationId String
+  tableId    String?
+  status     String      // OPEN | PAID | CANCELLED
+  createdAt  DateTime    @default(now())
+  items      OrderItem[]
+  payments   Payment[]
+
+  @@index([tenantId, locationId])
+  @@index([tableId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  variantId     String
+  quantity      Int
+  priceEach     Float
+  discount      Float    @default(0)
+
+  @@index([orderId])
+  @@index([variantId])
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  orderId     String
+  method      String   // CASH | PIN | OTHER
+  amount      Float
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
+  @@index([createdAt])
+}

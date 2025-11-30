@@ -25,3 +25,15 @@ export function setTableStatus(
 ): Table | undefined {
   return updateTableStatus(tenantId, tableId, status);
 }
+
+export async function listTables(tenantId: string, locationId: string) {
+  return [];
+}
+
+export async function createTable(tenantId: string, locationId: string, data: { name: string }) {
+  return { id: "table-1" };
+}
+
+export async function setTableState(tenantId: string, tableId: string, state: "FREE" | "SEATED" | "BILL_OPEN") {
+  return { ok: true };
+}
