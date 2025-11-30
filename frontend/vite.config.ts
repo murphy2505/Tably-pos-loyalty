@@ -4,14 +4,18 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: true,     // 🔥 BELANGRIJK → maakt Vite bereikbaar op LAN (iPad)
-    port: 5173,     // optioneel maar netjes
+    port: 5173,
     proxy: {
-      "/loyalty-api": {
-        target: "http://localhost:3000",
+      // Alles wat met /pos begint -> naar POS backend
+      "/pos": {
+        target: "http://localhost:4002",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/loyalty-api/, ""),
       },
+      // eventueel straks:
+      // "/loyalty": {
+      //   target: "http://localhost:4001",
+      //   changeOrigin: true,
+      // },
     },
   },
 });

@@ -1,17 +1,11 @@
-import type { KdsStatus } from "../types/kds";
-import type { KdsTicket } from "../types/kds";
-
-async function handle<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || "KDS request failed");
-  }
-  return res.json() as Promise<T>;
-}
+import type { KdsStatus, KdsTicket } from "../types/kds";
 
 export async function getKdsTickets(): Promise<KdsTicket[]> {
   const res = await fetch("/pos/kds");
-  return handle<KdsTicket[]>(res);
+  if (!res.ok) {
+    throw new Error("Kon KDS tickets niet laden");
+  }
+  return (await res.json()) as KdsTicket[];
 }
 
 export async function createKdsTicket(payload: {
@@ -24,19 +18,30 @@ export async function createKdsTicket(payload: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to create KDS ticket");
+  if (!res.ok) {
+    throw new Error("Kon KDS ticket niet aanmaken");
+  }
 }
 
-export async function updateKdsStatus(id: string, status: KdsStatus): Promise<void> {
+export async function updateKdsStatus(
+  id: string,
+  status: KdsStatus
+): Promise<void> {
   const res = await fetch(`/pos/kds/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
   });
-  if (!res.ok) throw new Error("Failed to update KDS status");
+  if (!res.ok) {
+    throw new Error("Kon KDS status niet bijwerken");
+  }
 }
 
 export async function deleteKdsTicket(id: string): Promise<void> {
-  const res = await fetch(`/pos/kds/${id}`, { method: "DELETE" });
-  if (!res.ok) throw new Error("Failed to delete KDS ticket");
+  const res = await fetch(`/pos/kds/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok && res.status !== 204) {
+    throw new Error("Kon KDS ticket niet verwijderen");
+  }
 }

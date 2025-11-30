@@ -5,18 +5,20 @@ export type PaymentMethod = "cash" | "card" | "sumup" | "qr";
 export interface CreateOrderPayload {
   lines: PosOrderLine[];
   totals: PosOrderTotals;
-  paymentMethod?: PaymentMethod;
+  paymentMethod: PaymentMethod;
   source?: "counter" | "phone" | "web" | "kiosk";
 }
 
 export interface CreateOrderResponse {
+  ok: boolean;
   orderId: string;
   ticketNumber: number;
-  status: string;
 }
 
-export async function createPosOrder(payload: CreateOrderPayload): Promise<CreateOrderResponse> {
-  const res = await fetch("/api/pos/orders", {
+export async function createPosOrder(
+  payload: CreateOrderPayload
+): Promise<CreateOrderResponse> {
+  const res = await fetch("/pos/orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
