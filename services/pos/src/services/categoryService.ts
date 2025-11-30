@@ -1,65 +1,72 @@
 import { Router } from "express";
 import { z } from "zod";
-import {
-  createCustomer as createCustomerSvc,
-  listCustomers,
-  getCustomerDetail,
-} from "../services/customersService";
 
-const router = Router();
+// In-memory category service (compile fix) – vervangt foutieve customer code
+type Category = {
+  id: string;
+  tenantId: string;
+  name: string;
+  color?: string;
+  parentId?: string | null;
+  order: number;
+};
 
-// POST /customers (name + phone + optional email)
-router.post("/", (req, res) => {
-  const schema = z.object({
-    name: z.string().min(1),
-    phone: z.string().min(3),
-    email: z.string().email().optional(),
-  });
+const categoriesStore: Category[] = [];
 
-  const parsed = schema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.flatten() });
-  }
+function genId() {
+  return "cat_" + Math.random().toString(36).slice(2, 10);
+}
 
-  (async () => {
-    try {
-      const customer = await createCustomerSvc(
-        parsed.data.name,
-        parsed.data.phone,
-        parsed.data.email
-      );
-      res.status(201).json(customer);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
-});
+export async function listCategories(tenantId: string, _locationId?: string) {
+  return categoriesStore
+    .filter(c => c.tenantId === tenantId)
+    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+}
 
-// GET /customers → lijst
-router.get("/", (_req, res) => {
-  (async () => {
-    try {
-      const list = await listCustomers();
-      res.json(list);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
-});
+export async function createCategory(
+  tenantId: string,
+  data: { name: string; color?: string; parentId?: string | null; order?: number }
+) {
+  const nextOrder =
+    typeof data.order === "number"
+      ? data.order
+      : categoriesStore
+          .filter(c => c.tenantId === tenantId)
+          .reduce((m, c) => (c.order > m ? c.order : m), -1) + 1;
 
-// GET /customers/:id → detail
-router.get("/:id", (req, res) => {
-  (async () => {
-    try {
-      const detail = await getCustomerDetail(req.params.id);
-      if (!detail) {
-        return res.status(404).json({ error: "Customer not found" });
-      }
-      res.json(detail);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
-});
+  const category: Category = {
+    id: genId(),
+    tenantId,
+    name: data.name,
+    color: data.color,
+    parentId: data.parentId ?? null,
+    order: nextOrder,
+  };
+  categoriesStore.push(category);
+  return category;
+}
 
-export default router;
+export async function updateCategory(
+  tenantId: string,
+  id: string,
+  data: { name?: string; color?: string; parentId?: string | null; order?: number }
+) {
+  const idx = categoriesStore.findIndex(c => c.id === id && c.tenantId === tenantId);
+  if (idx === -1) throw new Error("Category not found");
+  const existing = categoriesStore[idx];
+  categoriesStore[idx] = {
+    ...existing,
+    name: data.name ?? existing.name,
+    color: data.color ?? existing.color,
+    parentId: data.parentId !== undefined ? data.parentId : existing.parentId,
+    order: data.order !== undefined ? data.order : existing.order,
+  };
+  return categoriesStore[idx];
+}
+
+export async function deleteCategory(tenantId: string, id: string) {
+  const idx = categoriesStore.findIndex(c => c.id === id && c.tenantId === tenantId);
+  if (idx === -1) throw new Error("Category not found");
+  categoriesStore.splice(idx, 1);
+  return true;
+}

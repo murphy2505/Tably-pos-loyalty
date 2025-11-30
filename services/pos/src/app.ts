@@ -9,6 +9,8 @@ import productsRoutes from "./routes/products";
 import variantsRoutes from "./routes/variants";
 import stockRoutes from "./routes/stock";
 import coreOrdersRoutes from "./routes/orders";
+import customersRouter from "./routes/customersRouter";
+import categoriesRouter from "./routes/categoriesRouter";
 
 const app = express();
 
@@ -27,5 +29,9 @@ app.use("/pos/core/products", productsRoutes);
 app.use("/pos/core/variants", variantsRoutes);
 app.use("/pos/core/stock", stockRoutes);
 app.use("/pos/core/orders", coreOrdersRoutes);
+
+// Customers and categories
+app.use("/customers", customersRouter);
+app.use("/categories", categoriesRouter);
 
 export default app;

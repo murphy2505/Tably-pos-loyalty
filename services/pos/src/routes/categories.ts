@@ -1,103 +1,103 @@
 import { Router } from "express";
 import { z } from "zod";
 import {
-  createCustomer as createCustomerSvc,
-  listCustomers,
-  getCustomerDetail,
-} from "../services/customersService";
+  listCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../services/categoryService";
 
 const router = Router();
 
-// POST /customers (name + phone + optional email)
-router.post("/", (req, res) => {
-  const schema = z.object({
-    name: z.string().min(1),
-    phone: z.string().min(3),
-    email: z.string().email().optional(),
-  });
-
-  const parsed = schema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.flatten() });
+function requireTenant(req: any, res: any): { tenantId: string; locationId?: string } | undefined {
+  const tenantId = req.headers["x-tenant-id"];
+  if (!tenantId || typeof tenantId !== "string") {
+    res.status(400).json({ error: "Missing x-tenant-id header" });
+    return;
   }
+  const locationIdHeader = req.headers["x-location-id"];
+  const locationId = typeof locationIdHeader === "string" ? locationIdHeader : undefined;
+  return { tenantId, locationId };
+}
 
-  (async () => {
-    try {
-      const customer = await createCustomerSvc(
-        parsed.data.name,
-        parsed.data.phone,
-        parsed.data.email
-      );
-      res.status(201).json(customer);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
+const createSchema = z.object({
+  name: z.string().min(1),
+  color: z.string().optional(),
+  parentId: z.string().nullable().optional(),
+  order: z.number().int().min(0).optional(),
 });
 
-// GET /customers → lijst
-router.get("/", (_req, res) => {
-  (async () => {
-    try {
-      const list = await listCustomers();
-      res.json(list);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
-});
-
-// GET /customers/:id → detail
-router.get("/:id", (req, res) => {
-  (async () => {
-    try {
-      const detail = await getCustomerDetail(req.params.id);
-      if (!detail) {
-        return res.status(404).json({ error: "Customer not found" });
-      }
-      res.json(detail);
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  })();
+const updateSchema = z.object({
+  name: z.string().min(1).optional(),
+  color: z.string().optional(),
+  parentId: z.string().nullable().optional(),
+  order: z.number().int().min(0).optional(),
 });
 
 // GET /categories
-router.get("/categories", async (req, res) => {
+router.get("/", async (req, res) => {
+  const ctx = requireTenant(req, res);
+  if (!ctx) return;
   try {
-    // TODO: haal categories op gefilterd op tenantId
-    res.json([]);
+    const categories = await listCategories(ctx.tenantId, ctx.locationId);
+    res.json(categories);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
 });
 
 // POST /categories
-router.post("/categories", async (req, res) => {
+router.post("/", async (req, res) => {
+  const ctx = requireTenant(req, res);
+  if (!ctx) return;
+  const parsed = createSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
   try {
-    // TODO: maak category aan
-    res.status(201).json({ id: "cat-1" });
+    const category = await createCategory(ctx.tenantId, parsed.data);
+    res.status(201).json(category);
   } catch (e: any) {
+    if (e.message.includes("Category")) {
+      return res.status(404).json({ error: e.message });
+    }
     res.status(500).json({ error: e.message });
   }
 });
 
 // PUT /categories/:id
-router.put("/categories/:id", async (req, res) => {
+router.put("/:id", async (req, res) => {
+  const ctx = requireTenant(req, res);
+  if (!ctx) return;
+  const parsed = updateSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
   try {
-    // TODO: update category
-    res.json({ ok: true });
+    const updated = await updateCategory(ctx.tenantId, req.params.id, parsed.data);
+    res.json(updated);
   } catch (e: any) {
+    if (e.message.includes("not found")) {
+      return res.status(404).json({ error: e.message });
+    }
     res.status(500).json({ error: e.message });
   }
 });
 
 // DELETE /categories/:id
-router.delete("/categories/:id", async (req, res) => {
+router.delete("/:id", async (req, res) => {
+  const ctx = requireTenant(req, res);
+  if (!ctx) return;
   try {
-    // TODO: delete category
+    await deleteCategory(ctx.tenantId, req.params.id);
     res.status(204).send();
   } catch (e: any) {
+    if (e.message.includes("not found")) {
+      return res.status(404).json({ error: e.message });
+    }
+    if (e.message.includes("has products")) {
+      return res.status(400).json({ error: e.message });
+    }
     res.status(500).json({ error: e.message });
   }
 });
