@@ -1,97 +1,48 @@
+// services/pos/src/routes/kdsRoutes.ts
 import { Router } from "express";
-
-export type KdsStatus = "queued" | "preparing" | "ready";
-
-export interface KdsTicket {
-  id: string;
-  ticketNumber: number;
-  items: { name: string; qty: number }[];
-  status: KdsStatus;
-  createdAt: string;
-  updatedAt: string;
-}
+import {
+  listKdsTickets,
+  advanceKdsTicket,
+  type KdsTicket,
+} from "../services/kdsService";
 
 const router = Router();
 
-// in-memory store
-const kdsTickets: KdsTicket[] = [];
-
-// GET /pos/kds
-router.get("/", (_req, res) => {
-  const sorted = [...kdsTickets].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  );
-  res.json(sorted);
-});
-
-// POST /pos/kds
-router.post("/", (req, res) => {
+/**
+ * GET /pos/kds
+ * (mounted via app.use("/pos/kds", kdsRoutes))
+ */
+router.get("/", async (_req, res) => {
   try {
-    const { id, ticketNumber, items } = req.body as {
-      id?: string;
-      ticketNumber?: number;
-      items?: { name: string; qty: number }[];
-    };
-
-    if (
-      !id ||
-      typeof ticketNumber !== "number" ||
-      !Array.isArray(items) ||
-      items.length === 0
-    ) {
-      return res.status(400).json({ error: "Invalid KDS ticket payload" });
-    }
-
-    const now = new Date().toISOString();
-
-    const ticket: KdsTicket = {
-      id,
-      ticketNumber,
-      items,
-      status: "queued",
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    kdsTickets.push(ticket);
-
-    return res.status(201).json({ ok: true });
+    const tickets = await listKdsTickets();
+    res.json(
+      tickets.map((t: KdsTicket) => ({
+        ...t,
+        createdAt: t.createdAt.toISOString(),
+      }))
+    );
   } catch (e: any) {
-    console.error("Error in POST /pos/kds:", e);
-    return res.status(500).json({ error: e.message ?? "Unknown error" });
+    res.status(500).json({ error: e.message ?? "Failed to load KDS tickets" });
   }
 });
 
-// PATCH /pos/kds/:id/status
-router.patch("/:id/status", (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body as { status?: KdsStatus };
-
-  if (!status || !["queued", "preparing", "ready"].includes(status)) {
-    return res.status(400).json({ error: "Invalid status" });
+/**
+ * POST /pos/kds/:id/advance
+ */
+router.post("/:id/advance", async (req, res) => {
+  try {
+    const ticket = await advanceKdsTicket(req.params.id);
+    res.json({
+      ...ticket,
+      createdAt: ticket.createdAt.toISOString(),
+    });
+  } catch (e: any) {
+    if (e.message === "Ticket not found") {
+      res.status(404).json({ error: "Ticket not found" });
+    } else {
+      res.status(500).json({ error: e.message ?? "Failed to advance ticket" });
+    }
   }
-
-  const ticket = kdsTickets.find((t) => t.id === id);
-  if (!ticket) {
-    return res.status(404).json({ error: "Ticket not found" });
-  }
-
-  ticket.status = status;
-  ticket.updatedAt = new Date().toISOString();
-
-  res.json({ ok: true });
-});
-
-// DELETE /pos/kds/:id
-router.delete("/:id", (req, res) => {
-  const { id } = req.params;
-  const index = kdsTickets.findIndex((t) => t.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: "Ticket not found" });
-  }
-
-  kdsTickets.splice(index, 1);
-  return res.status(204).send();
 });
 
 export default router;

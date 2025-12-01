@@ -1,47 +1,51 @@
-import type { KdsStatus, KdsTicket } from "../types/kds";
+// frontend/src/services/kdsService.ts
+export type KdsStatus = "queued" | "preparing" | "ready";
 
-export async function getKdsTickets(): Promise<KdsTicket[]> {
-  const res = await fetch("/pos/kds");
-  if (!res.ok) {
-    throw new Error("Kon KDS tickets niet laden");
-  }
-  return (await res.json()) as KdsTicket[];
+export interface KdsTicketItem {
+  id: string;
+  productId: string;
+  name: string;
+  quantity: number;
+  notes?: string;
 }
 
-export async function createKdsTicket(payload: {
+export interface KdsTicket {
   id: string;
-  ticketNumber: number;
-  items: { name: string; qty: number }[];
-}): Promise<void> {
+  orderId?: string;
+  tableId?: string;
+  channel?: "inhouse" | "takeaway" | "delivery";
+  items: KdsTicketItem[];
+  status: KdsStatus;
+  createdAt: string;
+}
+
+export async function fetchKdsTickets(): Promise<KdsTicket[]> {
+  const res = await fetch("/pos/kds");
+  if (!res.ok) throw new Error("Failed to load KDS tickets");
+  return res.json();
+}
+
+export async function createKdsTicket(payload: Omit<KdsTicket, "createdAt">) {
   const res = await fetch("/pos/kds", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) {
-    throw new Error("Kon KDS ticket niet aanmaken");
-  }
+  if (!res.ok) throw new Error("Failed to create KDS ticket");
+  return res.json();
 }
 
-export async function updateKdsStatus(
-  id: string,
-  status: KdsStatus
-): Promise<void> {
+export async function updateKdsStatus(id: string, status: KdsStatus) {
   const res = await fetch(`/pos/kds/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
   });
-  if (!res.ok) {
-    throw new Error("Kon KDS status niet bijwerken");
-  }
+  if (!res.ok) throw new Error("Failed to update KDS status");
+  return res.json();
 }
 
-export async function deleteKdsTicket(id: string): Promise<void> {
-  const res = await fetch(`/pos/kds/${id}`, {
-    method: "DELETE",
-  });
-  if (!res.ok && res.status !== 204) {
-    throw new Error("Kon KDS ticket niet verwijderen");
-  }
+export async function deleteKdsTicket(id: string) {
+  const res = await fetch(`/pos/kds/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete KDS ticket");
 }

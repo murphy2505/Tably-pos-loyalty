@@ -150,10 +150,6 @@
 
 /* kleine tweak voor POS vs dashboard, mocht je later willen tunen */
 
-.kds-root.in-pos .kds-columns {
-  /* eventueel grotere tegels op POS-scherm */
-}
+/* eventueel grotere tegels op POS-scherm - add styles here if needed */
 
-.kds-root.in-dashboard .kds-columns {
-  /* eventueel compactere layout in dashboard */
-}
+/* eventueel compactere layout in dashboard - styles can be added here if needed */

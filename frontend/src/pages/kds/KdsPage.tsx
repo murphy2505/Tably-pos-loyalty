@@ -29,55 +29,74 @@ const KdsPage = () => {
 
   const isInPos = location.pathname.startsWith("/pos");
 
-  useEffect(() => {
-    const loadKds = async () => {
-      try {
-        const res = await fetch("/pos/kds");
-        if (!res.ok) throw new Error("Failed to load KDS");
-        const data = (await res.json()) as KdsTicket[];
-        setTickets(data);
-      } catch (e) {
-        console.error(e);
-        // fallback dummy data
-        setTickets([
-          {
-            id: "k1",
-            orderNumber: "1034",
-            tableName: "Tafel 5",
-            channel: "inhouse",
-            status: "new",
-            createdAt: new Date().toISOString(),
-            items: [
-              { id: "i1", name: "Friet groot", quantity: 2 },
-              { id: "i2", name: "Frikandel speciaal", quantity: 1 },
-            ],
-          },
-          {
-            id: "k2",
-            orderNumber: "1035",
-            tableName: "Afhaal",
-            channel: "takeaway",
-            status: "preparing",
-            createdAt: new Date().toISOString(),
-            items: [{ id: "i3", name: "Kipcorn", quantity: 3 }],
-          },
-          {
-            id: "k3",
-            orderNumber: "1036",
-            tableName: "Tafel 2",
-            channel: "inhouse",
-            status: "ready",
-            createdAt: new Date().toISOString(),
-            items: [{ id: "i4", name: "Boerenfriet", quantity: 1 }],
-          },
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadKds = async () => {
+    try {
+      const res = await fetch("/pos/kds");
+      if (!res.ok) throw new Error("Failed to load KDS");
+      const data = (await res.json()) as KdsTicket[];
+      setTickets(data);
+    } catch (e) {
+      console.error(e);
+      // fallback dummy data
+      setTickets([
+        {
+          id: "k1",
+          orderNumber: "1034",
+          tableName: "Tafel 5",
+          channel: "inhouse",
+          status: "new",
+          createdAt: new Date().toISOString(),
+          items: [
+            { id: "i1", name: "Friet groot", quantity: 2 },
+            { id: "i2", name: "Frikandel speciaal", quantity: 1 },
+          ],
+        },
+        {
+          id: "k2",
+          orderNumber: "1035",
+          tableName: "Afhaal",
+          channel: "takeaway",
+          status: "preparing",
+          createdAt: new Date().toISOString(),
+          items: [{ id: "i3", name: "Kipcorn", quantity: 3 }],
+        },
+        {
+          id: "k3",
+          orderNumber: "1036",
+          tableName: "Tafel 2",
+          channel: "inhouse",
+          status: "ready",
+          createdAt: new Date().toISOString(),
+          items: [{ id: "i4", name: "Boerenfriet", quantity: 1 }],
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    // eerste load
     loadKds();
+
+    // elke 5 seconden verversen
+    const interval = setInterval(() => {
+      loadKds();
+    }, 5000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleAdvance = async (ticketId: string) => {
+    try {
+      await fetch(`/pos/kds/${ticketId}/advance`, { method: "POST" });
+      // daarna gewoon opnieuw laden
+      await loadKds();
+    } catch (e) {
+      console.error("Failed to advance ticket", e);
+    }
+  };
 
   const filteredByStatus = (status: KdsStatus) =>
     tickets.filter((t) => t.status === status);
@@ -87,9 +106,7 @@ const KdsPage = () => {
       <div className="kds-ticket-header">
         <div className="kds-order">
           <span className="kds-order-number">#{t.orderNumber}</span>
-          {t.tableName && (
-            <span className="kds-table">{t.tableName}</span>
-          )}
+          {t.tableName && <span className="kds-table">{t.tableName}</span>}
         </div>
         <span className={`kds-channel ${t.channel}`}>
           {t.channel === "inhouse"
@@ -111,12 +128,16 @@ const KdsPage = () => {
       <div className="kds-footer">
         <button
           className="kds-btn"
-          onClick={() => {
-            // TODO: API call naar /pos/kds/{id}/advance
-            console.log("Advance ticket", t.id);
-          }}
+          onClick={() => handleAdvance(t.id)}
+          disabled={t.status === "done"}
         >
-          Volgende stap
+          {t.status === "new"
+            ? "Start bereiding"
+            : t.status === "preparing"
+            ? "Markeer als klaar"
+            : t.status === "ready"
+            ? "Bon afgerond"
+            : "Afgerond"}
         </button>
       </div>
     </div>
