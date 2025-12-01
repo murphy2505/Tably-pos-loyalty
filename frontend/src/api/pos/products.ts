@@ -29,7 +29,7 @@ export async function deleteProduct(id: string) {
   if (!res.ok) throw new Error("Failed to delete product");
 }
 
-export async function getVariants(productId: string) {
+export async function getVariants() {
   // Indien backend een query filter heeft, kun je hier naar /pos/core/variants?productId=... gaan.
   // Voor nu veronderstellen we dat het product detail inclusief variants wordt opgehaald via getProducts.
   // Placeholder die leeg terugkeert.

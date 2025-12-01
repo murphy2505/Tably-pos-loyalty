@@ -26,11 +26,11 @@ export function setTableStatus(
   return updateTableStatus(tenantId, tableId, status);
 }
 
-export async function listTables(tenantId: string, locationId: string) {
+export async function listTablesByLocation(tenantId: string, locationId: string) {
   return [];
 }
 
-export async function createTable(tenantId: string, locationId: string, data: { name: string }) {
+export async function createTableAsync(tenantId: string, locationId: string, data: { name: string }) {
   return { id: "table-1" };
 }
 
