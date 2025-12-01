@@ -30,6 +30,33 @@ export default function DashboardLayout() {
           >
             KDS
           </NavLink>
+
+          {/* Producten & voorraad */}
+          <NavLink
+            to="/dashboard/products"
+            className={({ isActive }) =>
+              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
+            }
+          >
+            Producten
+          </NavLink>
+          <NavLink
+            to="/dashboard/categories"
+            className={({ isActive }) =>
+              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
+            }
+          >
+            Categorieën
+          </NavLink>
+          <NavLink
+            to="/dashboard/stock"
+            className={({ isActive }) =>
+              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
+            }
+          >
+            Voorraad
+          </NavLink>
+
           <NavLink
             to="/dashboard/loyalty"
             className={({ isActive }) =>

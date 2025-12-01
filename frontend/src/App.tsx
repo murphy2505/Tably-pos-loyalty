@@ -9,6 +9,9 @@ import PosPage from "./pages/pos/PosPage";
 import LoyaltyPage from "./pages/loyalty/LoyaltyPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import KdsPage from "./pages/kds/KdsPage";
+import ProductsPage from "./pages/dashboard/products/ProductsPage";
+import CategoriesPage from "./pages/dashboard/products/CategoriesPage";
+import StockPage from "./pages/dashboard/products/StockPage";
 
 export default function App() {
   return (
@@ -23,6 +26,9 @@ export default function App() {
           <Route path="loyalty" element={<LoyaltyPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="kds" element={<KdsPage />} />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
+          <Route path="stock" element={<StockPage />} />
         </Route>
         <Route path="*" element={<div>404 – Not found</div>} />
       </Routes>
