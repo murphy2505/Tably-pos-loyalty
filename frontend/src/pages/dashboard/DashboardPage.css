@@ -1,0 +1,19 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.tile {
+  background: rgba(15, 23, 42, 0.92);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.tile:hover {
+  background: rgba(30, 41, 59, 0.92);
+}

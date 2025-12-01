@@ -1,37 +1,46 @@
 import express from "express";
-import ordersRoutes from "./routes/ordersRoutes";
-import kdsRoutes from "./routes/kdsRoutes";
+import cors from "cors";
 import healthRouter from "./routes/health";
+import kdsRoutes from "./routes/kdsRoutes";
 import tablesRouter from "./routes/tables";
 import authMiddleware from "./middleware/auth";
+
+// Core/beheer routes
 import categoriesRoutes from "./routes/categories";
 import productsRoutes from "./routes/products";
 import variantsRoutes from "./routes/variants";
 import stockRoutes from "./routes/stock";
-import coreOrdersRoutes from "./routes/orders";
+import ordersRoutes from "./routes/orders"; // consistent alias
 import customersRouter from "./routes/customersRouter";
-import categoriesRouter from "./routes/categoriesRouter";
 
 const app = express();
 
-// Body parser vóór routes
+// Middleware vóór routes
+app.use(cors());
 app.use(express.json());
 
-// POS routes
+/**
+ * Public / basis POS endpoints
+ */
 app.use("/pos/health", healthRouter);
-app.use("/pos/orders", ordersRoutes);
 app.use("/pos/kds", kdsRoutes);
 
-// Optioneel protected
-app.use("/pos/tables", authMiddleware, tablesRouter);
-app.use("/pos/core/categories", categoriesRoutes);
-app.use("/pos/core/products", productsRoutes);
-app.use("/pos/core/variants", variantsRoutes);
-app.use("/pos/core/stock", stockRoutes);
-app.use("/pos/core/orders", coreOrdersRoutes);
+// Orders
+app.use("/pos/orders", ordersRoutes);
 
-// Customers and categories
-app.use("/customers", customersRouter);
-app.use("/categories", categoriesRouter);
+/**
+ * Protected / core beheer endpoints
+ */
+app.use("/pos/tables", authMiddleware, tablesRouter);
+app.use("/pos/core/categories", authMiddleware, categoriesRoutes);
+app.use("/pos/core/products", authMiddleware, productsRoutes);
+app.use("/pos/core/variants", authMiddleware, variantsRoutes);
+app.use("/pos/core/stock", authMiddleware, stockRoutes);
+
+/**
+ * POS-klanten endpoint (alleen onder /pos/customers)
+ * Klantdata is single source of truth in loyalty-service.
+ */
+app.use("/pos/customers", authMiddleware, customersRouter);
 
 export default app;

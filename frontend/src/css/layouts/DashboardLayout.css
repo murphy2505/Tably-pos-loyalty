@@ -1,0 +1,46 @@
+/* src/css/layouts/DashboardLayout.css */
+.dashboard-layout-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dashboard-layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.dashboard-layout-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.dashboard-layout-topnav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dash-toplink {
+  padding: 6px 10px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.dash-toplink.active {
+  background: rgba(59, 130, 246, 0.85);
+}
+
+.dashboard-layout-main {
+  flex: 1;
+  overflow: auto;
+}
