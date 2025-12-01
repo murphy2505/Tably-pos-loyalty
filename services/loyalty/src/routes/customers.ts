@@ -62,4 +62,57 @@ router.get("/:id", (req, res) => {
   })();
 });
 
+// Extra aliases zodat proxy met prefix ook werkt:
+// POST /loyalty-api/customers
+router.post("/loyalty-api/customers", (req, res) => {
+  const schema = z.object({
+    name: z.string().min(1),
+    phone: z.string().min(3),
+    email: z.string().email().optional(),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  (async () => {
+    try {
+      const customer = await createCustomerSvc(
+        parsed.data.name,
+        parsed.data.phone,
+        parsed.data.email
+      );
+      res.status(201).json(customer);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  })();
+});
+
+// GET /loyalty-api/customers
+router.get("/loyalty-api/customers", (_req, res) => {
+  (async () => {
+    try {
+      const list = await listCustomers();
+      res.json(list);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  })();
+});
+
+// GET /loyalty-api/customers/:id
+router.get("/loyalty-api/customers/:id", (req, res) => {
+  (async () => {
+    try {
+      const detail = await getCustomerDetail(req.params.id);
+      if (!detail) {
+        return res.status(404).json({ error: "Customer not found" });
+      }
+      res.json(detail);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  })();
+});
+
 export default router;
