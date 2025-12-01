@@ -1,0 +1,159 @@
+.kds-root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  color: #e5e7eb;
+}
+
+.kds-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.kds-header p {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.kds-loading {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.kds-columns {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kds-column {
+  border-radius: 16px;
+  padding: 8px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  display: flex;
+  flex-direction: column;
+}
+
+.kds-column h3 {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+}
+
+.kds-column-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* tickets */
+
+.kds-ticket {
+  border-radius: 14px;
+  padding: 8px;
+  background: radial-gradient(
+    circle at top left,
+    rgba(59, 130, 246, 0.25),
+    rgba(15, 23, 42, 0.98)
+  );
+  border: 1px solid rgba(30, 64, 175, 0.7);
+}
+
+.kds-ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.kds-order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kds-order-number {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.kds-table {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.kds-channel {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.kds-channel.inhouse {
+  background: rgba(22, 163, 74, 0.25);
+  color: #bbf7d0;
+}
+
+.kds-channel.takeaway {
+  background: rgba(234, 179, 8, 0.25);
+  color: #fef9c3;
+}
+
+.kds-channel.delivery {
+  background: rgba(59, 130, 246, 0.25);
+  color: #bfdbfe;
+}
+
+.kds-items {
+  margin-bottom: 6px;
+}
+
+.kds-item-row {
+  display: flex;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+
+.kds-qty {
+  font-weight: 600;
+}
+
+.kds-name {
+  flex: 1;
+}
+
+.kds-notes {
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.kds-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kds-btn {
+  border-radius: 999px;
+  border: none;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  background: rgba(34, 197, 94, 0.95);
+  color: #02140a;
+  cursor: pointer;
+}
+
+/* kleine tweak voor POS vs dashboard, mocht je later willen tunen */
+
+.kds-root.in-pos .kds-columns {
+  /* eventueel grotere tegels op POS-scherm */
+}
+
+.kds-root.in-dashboard .kds-columns {
+  /* eventueel compactere layout in dashboard */
+}

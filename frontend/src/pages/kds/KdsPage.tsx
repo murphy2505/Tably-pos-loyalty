@@ -1,109 +1,171 @@
+// frontend/src/pages/kds/KdsPage.tsx
 import { useEffect, useState } from "react";
-import "../../styles/pos/pos.css";
-import type { KdsTicket, KdsStatus } from "../../types/kds";
-import {
-  getKdsTickets,
-  updateKdsStatus,
-  deleteKdsTicket,
-} from "../../services/kdsService";
+import { useLocation } from "react-router-dom";
+import "./KdsPage.css";
 
-export default function KdsPage() {
+type KdsStatus = "new" | "preparing" | "ready" | "done";
+
+interface KdsItem {
+  id: string;
+  name: string;
+  quantity: number;
+  notes?: string;
+}
+
+interface KdsTicket {
+  id: string;
+  orderNumber: string;
+  tableName?: string | null;
+  channel: "inhouse" | "takeaway" | "delivery";
+  status: KdsStatus;
+  createdAt: string;
+  items: KdsItem[];
+}
+
+const KdsPage = () => {
   const [tickets, setTickets] = useState<KdsTicket[]>([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
-  async function loadTickets() {
-    setLoading(true);
-    try {
-      const data = await getKdsTickets();
-      setTickets(data ?? []);
-    } catch (e) {
-      // Geen foutmelding meer in de UI, alleen in console
-      console.error("KDS load error:", e);
-      setTickets([]);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const isInPos = location.pathname.startsWith("/pos");
 
   useEffect(() => {
-    void loadTickets();
+    const loadKds = async () => {
+      try {
+        const res = await fetch("/pos/kds");
+        if (!res.ok) throw new Error("Failed to load KDS");
+        const data = (await res.json()) as KdsTicket[];
+        setTickets(data);
+      } catch (e) {
+        console.error(e);
+        // fallback dummy data
+        setTickets([
+          {
+            id: "k1",
+            orderNumber: "1034",
+            tableName: "Tafel 5",
+            channel: "inhouse",
+            status: "new",
+            createdAt: new Date().toISOString(),
+            items: [
+              { id: "i1", name: "Friet groot", quantity: 2 },
+              { id: "i2", name: "Frikandel speciaal", quantity: 1 },
+            ],
+          },
+          {
+            id: "k2",
+            orderNumber: "1035",
+            tableName: "Afhaal",
+            channel: "takeaway",
+            status: "preparing",
+            createdAt: new Date().toISOString(),
+            items: [{ id: "i3", name: "Kipcorn", quantity: 3 }],
+          },
+          {
+            id: "k3",
+            orderNumber: "1036",
+            tableName: "Tafel 2",
+            channel: "inhouse",
+            status: "ready",
+            createdAt: new Date().toISOString(),
+            items: [{ id: "i4", name: "Boerenfriet", quantity: 1 }],
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadKds();
   }, []);
 
-  async function changeStatus(id: string, status: KdsStatus) {
-    try {
-      await updateKdsStatus(id, status);
-      await loadTickets();
-    } catch (e) {
-      console.error("KDS status error:", e);
-    }
-  }
+  const filteredByStatus = (status: KdsStatus) =>
+    tickets.filter((t) => t.status === status);
 
-  async function removeTicket(id: string) {
-    try {
-      await deleteKdsTicket(id);
-      await loadTickets();
-    } catch (e) {
-      console.error("KDS delete error:", e);
-    }
-  }
+  const renderTicket = (t: KdsTicket) => (
+    <div key={t.id} className="kds-ticket">
+      <div className="kds-ticket-header">
+        <div className="kds-order">
+          <span className="kds-order-number">#{t.orderNumber}</span>
+          {t.tableName && (
+            <span className="kds-table">{t.tableName}</span>
+          )}
+        </div>
+        <span className={`kds-channel ${t.channel}`}>
+          {t.channel === "inhouse"
+            ? "In huis"
+            : t.channel === "takeaway"
+            ? "Afhaal"
+            : "Bezorging"}
+        </span>
+      </div>
+      <div className="kds-items">
+        {t.items.map((i) => (
+          <div key={i.id} className="kds-item-row">
+            <span className="kds-qty">{i.quantity}×</span>
+            <span className="kds-name">{i.name}</span>
+            {i.notes && <span className="kds-notes">{i.notes}</span>}
+          </div>
+        ))}
+      </div>
+      <div className="kds-footer">
+        <button
+          className="kds-btn"
+          onClick={() => {
+            // TODO: API call naar /pos/kds/{id}/advance
+            console.log("Advance ticket", t.id);
+          }}
+        >
+          Volgende stap
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="kds-page">
-      <h2 className="kds-title">Kitchen Display</h2>
+    <div className={`kds-root ${isInPos ? "in-pos" : "in-dashboard"}`}>
+      <header className="kds-header">
+        <div>
+          <h2>KDS</h2>
+          <p>
+            Overzicht van openstaande keukenbonnen
+            {isInPos ? " (POS-weergave)." : " (dashboard-weergave)."}
+          </p>
+        </div>
+      </header>
 
-      {loading && <div className="kds-info">Laden...</div>}
-      {!loading && tickets.length === 0 && (
-        <div className="kds-info">Geen tickets.</div>
-      )}
-
-      {!loading && tickets.length > 0 && (
-        <div className="kds-grid">
-          {tickets.map((t) => (
-            <div key={t.id} className="kds-card">
-              <div className="kds-card-header">
-                <div className="kds-ticket-number">Bon #{t.ticketNumber}</div>
-                <span className={`kds-status kds-status--${t.status}`}>
-                  {t.status === "queued"
-                    ? "Wachten"
-                    : t.status === "preparing"
-                    ? "Bezig"
-                    : "Klaar"}
-                </span>
-              </div>
-
-              <ul className="kds-items">
-                {t.items.map((item, idx) => (
-                  <li key={idx}>
-                    <span className="kds-item-qty">{item.qty}×</span>{" "}
-                    <span>{item.name}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="kds-actions">
-                <button
-                  type="button"
-                  onClick={() => changeStatus(t.id, "preparing")}
-                >
-                  Markeer bezig
-                </button>
-                <button
-                  type="button"
-                  onClick={() => changeStatus(t.id, "ready")}
-                >
-                  Klaar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeTicket(t.id)}
-                >
-                  Verwijder
-                </button>
-              </div>
+      {loading ? (
+        <div className="kds-loading">Keukenbonnen laden…</div>
+      ) : (
+        <div className="kds-columns">
+          <section className="kds-column">
+            <h3>Nieuw</h3>
+            <div className="kds-column-body">
+              {filteredByStatus("new").map(renderTicket)}
             </div>
-          ))}
+          </section>
+          <section className="kds-column">
+            <h3>In bereiding</h3>
+            <div className="kds-column-body">
+              {filteredByStatus("preparing").map(renderTicket)}
+            </div>
+          </section>
+          <section className="kds-column">
+            <h3>Klaar</h3>
+            <div className="kds-column-body">
+              {filteredByStatus("ready").map(renderTicket)}
+            </div>
+          </section>
+          <section className="kds-column">
+            <h3>Afgerond</h3>
+            <div className="kds-column-body">
+              {filteredByStatus("done").map(renderTicket)}
+            </div>
+          </section>
         </div>
       )}
     </div>
   );
-}
+};
+
+export default KdsPage;

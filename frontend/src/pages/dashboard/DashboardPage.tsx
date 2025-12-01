@@ -1,16 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useModules } from "../../context/modulesContext";
+import type { ModuleKey } from "../../context/modulesContext";
 import "./DashboardPage.css";
-
-type ModuleKey =
-  | "pos"
-  | "kds"
-  | "products"
-  | "categories"
-  | "stock"
-  | "customers"
-  | "loyalty"
-  | "settings";
 
 interface ModuleCard {
   key: ModuleKey;
@@ -72,26 +63,7 @@ const MODULES: ModuleCard[] = [
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-
-  // Later haal je dit uit backend / tenant-config
-  const [enabled, setEnabled] = useState<Record<ModuleKey, boolean>>({
-    pos: true,
-    kds: true,
-    products: true,
-    categories: true,
-    stock: true,
-    customers: true,
-    loyalty: true,
-    settings: true,
-  });
-
-  const toggleModule = (key: ModuleKey) => {
-    setEnabled((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-    // TODO: later PATCH naar /api/admin/modules
-  };
+  const { modules, toggleModule } = useModules();
 
   return (
     <div className="dash-page-root">
@@ -102,7 +74,7 @@ const DashboardPage = () => {
         </div>
         <div className="dash-page-meta">
           <span className="dash-chip">PROD · ’t Centrum</span>
-          <span className="dash-chip soft">Vandaag live</span>
+          <span className="dash-chip soft">Modules beheer</span>
         </div>
       </header>
 
@@ -115,7 +87,7 @@ const DashboardPage = () => {
 
         <div className="dash-modules-grid">
           {MODULES.map((m) => {
-            const active = enabled[m.key];
+            const active = modules[m.key];
             return (
               <div key={m.key} className="dash-module-card">
                 <div className="dash-module-head">

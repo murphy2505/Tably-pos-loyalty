@@ -1,0 +1,130 @@
+.tables-root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  color: #e5e7eb;
+}
+
+.tables-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.tables-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tables-header p {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.tables-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.legend-pill {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+}
+
+.legend-pill.free {
+  background: rgba(22, 163, 74, 0.2);
+  color: #bbf7d0;
+}
+.legend-pill.occupied {
+  background: rgba(59, 130, 246, 0.2);
+  color: #bfdbfe;
+}
+.legend-pill.preparing {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fef9c3;
+}
+.legend-pill.waiting_payment {
+  background: rgba(248, 113, 113, 0.2);
+  color: #fee2e2;
+}
+
+.tables-loading {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.tables-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.table-card {
+  border-radius: 16px;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  padding: 8px;
+  text-align: left;
+  background: rgba(15, 23, 42, 0.98);
+  cursor: pointer;
+}
+
+.table-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.table-seats {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.table-status-label {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  padding: 3px 6px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+/* statuskleuren */
+
+.table-card.free {
+  border-color: rgba(22, 163, 74, 0.8);
+}
+.table-card.free .table-status-label {
+  background: rgba(22, 163, 74, 0.2);
+  color: #bbf7d0;
+}
+
+.table-card.occupied {
+  border-color: rgba(59, 130, 246, 0.8);
+}
+.table-card.occupied .table-status-label {
+  background: rgba(59, 130, 246, 0.2);
+  color: #bfdbfe;
+}
+
+.table-card.preparing {
+  border-color: rgba(234, 179, 8, 0.8);
+}
+.table-card.preparing .table-status-label {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fef9c3;
+}
+
+.table-card.waiting_payment {
+  border-color: rgba(248, 113, 113, 0.8);
+}
+.table-card.waiting_payment .table-status-label {
+  background: rgba(248, 113, 113, 0.2);
+  color: #fee2e2;
+}

@@ -1,92 +1,55 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import "./DashboardLayout.css";
 
-export default function DashboardLayout() {
+const DashboardLayout = () => {
+  const location = useLocation();
+
+  const linkClass = (path: string) => {
+    const full = `/dashboard${path ? `/${path}` : ""}`;
+    const isActive = location.pathname === full;
+    return isActive ? "dash-toplink active" : "dash-toplink";
+  };
+
   return (
-    <div className="dashboard-shell">
-      <aside className="dashboard-sidebar">
-        <div className="dashboard-brand">Tablie Dashboard</div>
-        <nav className="dashboard-nav">
-          <NavLink
-            to="/dashboard/customers"
-            className={({ isActive }) =>
-              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
-            }
-          >
-            Customers
+    <div className="dash-root">
+      <header className="dash-header">
+        <div className="dash-title">Tablie Dashboard</div>
+        <nav className="dash-topnav">
+          <NavLink to="/dashboard" className={linkClass("")}>
+            Overzicht
           </NavLink>
-          <NavLink
-            to="/dashboard/pos"
-            className={({ isActive }) =>
-              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
-            }
-          >
-            POS
+          <NavLink to="/dashboard/customers" className={linkClass("customers")}>
+            Klanten
           </NavLink>
-          <NavLink
-            to="/dashboard/kds"
-            className={({ isActive }) =>
-              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
-            }
-          >
-            KDS
-          </NavLink>
-
-          {/* Producten & voorraad */}
-          <NavLink
-            to="/dashboard/products"
-            className={({ isActive }) =>
-              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
-            }
-          >
+          <NavLink to="/dashboard/products" className={linkClass("products")}>
             Producten
           </NavLink>
           <NavLink
             to="/dashboard/categories"
-            className={({ isActive }) =>
-              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
-            }
+            className={linkClass("categories")}
           >
             Categorieën
           </NavLink>
-          <NavLink
-            to="/dashboard/stock"
-            className={({ isActive }) =>
-              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
-            }
-          >
+          <NavLink to="/dashboard/stock" className={linkClass("stock")}>
             Voorraad
           </NavLink>
-
-          <NavLink
-            to="/dashboard/loyalty"
-            className={({ isActive }) =>
-              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
-            }
-          >
-            Loyalty
+          <NavLink to="/dashboard/kds" className={linkClass("kds")}>
+            KDS
           </NavLink>
           <NavLink
             to="/dashboard/settings"
-            className={({ isActive }) =>
-              "sidebar-link" + (isActive ? " sidebar-link--active" : "")
-            }
+            className={linkClass("settings")}
           >
-            Settings
+            Instellingen
           </NavLink>
         </nav>
-      </aside>
-      <main className="dashboard-main">
-        <header className="dashboard-header">
-          <div className="dashboard-header-left">Tablie Dashboard</div>
-          <div className="dashboard-header-right">
-            <span className="env-chip">PROD · 't Centrum</span>
-            <span className="user-chip">Mervyn</span>
-          </div>
-        </header>
-        <section className="dashboard-content">
-          <Outlet />
-        </section>
+      </header>
+
+      <main className="dash-main">
+        <Outlet />
       </main>
     </div>
   );
-}
+};
+
+export default DashboardLayout;

@@ -1,46 +1,59 @@
-/* src/css/layouts/DashboardLayout.css */
-.dashboard-layout-root {
+.dash-root {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.dashboard-layout-header {
+.dash-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 10px 14px;
   margin-bottom: 12px;
-  border-radius: 16px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 18px;
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.35), rgba(15, 23, 42, 0.98));
+  border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
-.dashboard-layout-title {
+.dash-title {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.dashboard-layout-topnav {
+.dash-topnav {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .dash-toplink {
   padding: 6px 10px;
   border-radius: 999px;
   text-decoration: none;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  background: rgba(15, 23, 42, 0.9);
   color: #e5e7eb;
-  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
 .dash-toplink.active {
-  background: rgba(59, 130, 246, 0.85);
+  background: linear-gradient(
+    135deg,
+    rgba(56, 189, 248, 0.95),
+    rgba(45, 212, 191, 0.95)
+  );
+  color: #0f172a;
 }
 
-.dashboard-layout-main {
-  flex: 1;
+.dash-main {
+  margin-top: 8px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(30, 64, 175, 0.6);
+  padding: 12px;
+  height: calc(100% - 60px);
   overflow: auto;
 }
