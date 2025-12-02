@@ -53,38 +53,119 @@
   backdrop-filter: blur(12px);
   padding: 20px;
 }
+
+/* critical container */
 .pos-shell {
+  position: relative;
   height: 100vh;
   width: 100%;
   overflow: hidden;
+}
+
+/* sidebar */
+.pos-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 260px;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease;
+  transform: translateX(-100%);
+  z-index: 100;
+  padding-top: 70px;
+}
+
+.pos-sidebar.open {
+  transform: translateX(0);
+}
+
+/* overlay */
+.pos-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+}
+
+/* menu button */
+.pos-menu-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  z-index: 110;
+  color: white;
+  font-size: 24px;
+  display: grid;
+  place-items: center;
+}
+
+/* POS layout container (PosLayout.tsx) */
+.pos-layout {
   position: relative;
-  background: #0e1116; /* dark gradient pro */
+  height: 100vh;
+  width: 100%;
+  background: #0e1116;
+  overflow: hidden;
 }
 
-.pos-main-area.mint-glass {
-  backdrop-filter: saturate(180%) blur(22px);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 16px;
-  margin: 12px;
-  height: calc(100vh - 24px);
-  overflow-y: auto;
-  box-shadow: 0 0 30px rgba(0, 255, 180, 0.15);
+.pos-layout-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 64px;
+  padding-left: 80px; /* ruimte voor hamburger btn links */
+  color: #e5e7eb;
+  z-index: 50; /* onder de sidebar button, boven content */
 }
 
-/* Mint cards */
-.mint-card {
-  background: rgba(0, 255, 180, 0.10);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 255, 180, 0.25);
-  padding: 14px;
-  margin-bottom: 10px;
-  border-radius: 18px;
-  transition: 0.15s ease;
+.pos-layout-title {
+  font-weight: 600;
+  font-size: 1rem;
 }
-.mint-card:hover {
-  background: rgba(0, 255, 180, 0.22);
-  cursor: pointer;
+
+.pos-layout-content {
+  position: relative;
+  height: calc(100vh - 64px);
+  overflow: auto;
+  z-index: 10; /* content onder overlay en sidebar */
+}
+
+/* Sidebar (slide-in) */
+.pos-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 260px;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease;
+  transform: translateX(-100%);
+  z-index: 100; /* boven content, onder hamburger (110) */
+  padding-top: 70px;
+}
+
+.pos-sidebar.open {
+  transform: translateX(0);
+}
+
+/* Overlay only when open=true (component rendert conditioneel) */
+.pos-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 90; /* onder sidebar, boven content */
 }
 
 /* Hamburger button */
@@ -94,17 +175,565 @@
   left: 18px;
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  z-index: 110; /* boven sidebar */
+  color: white;
+  font-size: 24px;
+  display: grid;
+  place-items: center;
 }
 
-/* Sidebar slide */
-.pos-sidebar {
-  width: 260px;
-  height: 100vh;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(12px);
-  padding: 20px;
+/* Sidebar items */
+.pos-sidebar-item,
+.pos-menu-item {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  background: transparent;
+  border: none;
+  color: #e5e7eb;
+  text-align: left;
+  font-size: 16px;
+  cursor: pointer;
 }
+.pos-menu-item.is-active {
+  background: rgba(59,130,246,0.15);
+  border-radius: 10px;
+}
+
+/* Producttegel zichtbaar + leesbaar in dark thema */
+.pos-product-card {
+  color: #e5e7eb;
+}
+.pos-product-name {
+  color: #f9fafb;
+}
+.pos-product-price {
+  color: #a5b4fc;
+}
+
+/* Grid scroll en ruimte (voorkom verborgen content) */
+.pos-products-grid {
+  height: 100%;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+/* Buitenste container binnen pos-layout-content */
+.pos-page {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Mint-glass kaart voor het hele kassascherm */
+.pos-page-inner.mint-glass-card {
+  background: rgba(15, 23, 42, 0.85);       /* donker glas */
+  backdrop-filter: blur(20px) saturate(150%);
+  border-radius: 24px;
+  border: 1px solid rgba(56, 189, 248, 0.35);  /* mint/cyaan randje */
+  box-shadow: 0 0 40px rgba(56, 189, 248, 0.22);
+  padding: 16px;
+  min-height: calc(100vh - 64px - 24px);    /* onder de POS-header */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Zorg dat de twee kolommen netjes naast elkaar staan */
+.pos-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;           /* links: producten, rechts: bon */
+  gap: 12px;
+}
+
+/* Onderbalk netjes onderaan de kaart */
+.pos-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Optioneel: bottom-buttons wat mooier in deze stijl */
+.pos-bottom-button {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+/* PosLayout content: geef ruimte en centreer de pagina */
+.pos-layout-content {
+  height: calc(100vh - 64px);
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+/* HOOFD-POSKAART – vult de hoogte, zodat bottom-bar blijft staan */
+.pos-page.mint-glass-card {
+  width: 100%;
+  max-width: 1380px;
+  background: #f5f7fb;
+  border-radius: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  /* 🔑 kaart gebruikt hele hoogte onder de header */
+  height: calc(100vh - 64px - 32px); /* 64px header, 2×16px padding layout */
+}
+
+/* Middenstuk (tegels + bon) scrollt binnen de kaart */
+.pos-main {
+  flex: 1;
+  min-height: 0;  /* nodig voor goede flex-scroll */
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  overflow: auto; /* 🔑 alleen dit stuk scrollt */
+}
+
+
+/* Onderbalk */
+.pos-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pos-bottom-button {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+/* POS content-gebied onder de POS-header */
+.pos-layout-content {
+  height: calc(100vh - 64px);
+  overflow: auto;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Kassascherm = grote mint-glass kaart */
+.pos-page.mint-glass-card {
+  width: 100%;
+  max-width: 1400px;
+  background: radial-gradient(circle at top left, #1f2937 0, #020617 55%);
+  background-color: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(22px) saturate(150%);
+  border-radius: 24px;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 40px rgba(56, 189, 248, 0.25);
+  padding: 16px;
+  min-height: calc(100vh - 64px - 32px); /* header + padding */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Twee kolommen: producten links, bon rechts */
+.pos-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+/* Product-grid kaarten in mint-glass stijl */
+.pos-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.pos-product-card {
+  border: none;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 14px rgba(15, 23, 42, 0.7);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  color: #e5e7eb;
+}
+
+.pos-product-card .pos-product-add-button {
+  align-self: flex-end;
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.pos-product-name {
+  color: #f9fafb;
+}
+
+.pos-product-price {
+  color: #a5b4fc;
+}
+
+/* Order-paneel rechts ook glasachtig */
+.pos-order {
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.7);
+}
+
+/* Onderbalk onderaan de kaart */
+.pos-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pos-bottom-button {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 1);
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+/* =====================================================
+   Tably POS – Booq / Gifty Hybrid Theme
+   (plak dit blok ONDERAAN pos.css)
+   ===================================================== */
+
+/* Donker canvas achter de POS-kaart */
+.pos-layout {
+  background: radial-gradient(circle at top left, #111827 0, #020617 55%);
+}
+
+/* Content onder header: centreer de POS-kaart */
+.pos-layout-content {
+  height: calc(100vh - 64px);
+  padding: 16px 24px;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* HOOFD-POSKAART (licht, fris, beetje Gifty/Booq) */
+.pos-page.mint-glass-card {
+  width: 100%;
+  max-width: 1380px;
+  background: #f5f7fb;
+  border-radius: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Twee kolommen: links producten, rechts bon */
+.pos-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+/* LINKERKANT – productzijde */
+.pos-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Categorie-balk zoals Booq: pill-knoppen op licht vlak */
+.pos-category-bar {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+
+.pos-category-button {
+  border-radius: 999px;
+  border: none;
+  padding: 6px 12px;
+  font-size: 13px;
+  background: transparent;
+  color: #111827;
+}
+
+.pos-category-button.is-active {
+  background: #2563eb;
+  color: #f9fafb;
+}
+
+/* Productgrid: lichte tegels */
+.pos-products {
+  flex: 1;
+  min-height: 0;
+}
+
+.pos-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.pos-product-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  color: #111827;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+}
+
+.pos-product-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+}
+
+.pos-product-name {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.pos-product-price {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.pos-product-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.pos-product-add-button {
+  align-self: flex-end;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #2563eb;
+}
+
+/* RECHTERKANT – BONPANEEL (licht & super leesbaar) */
+.pos-order {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #111827;
+}
+
+.pos-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.pos-order-title {
+  font-weight: 600;
+}
+
+.pos-order-status {
+  font-size: 12px;
+  color: #16a34a;
+}
+
+/* Geparkeerde bonnen */
+.pos-parked-orders {
+  font-size: 12px;
+}
+
+.pos-parked-title {
+  color: #6b7280;
+}
+
+.pos-parked-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.pos-parked-chip {
+  border-radius: 999px;
+  border: none;
+  padding: 2px 8px;
+  font-size: 11px;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Lijnen in de bon */
+.pos-order-lines {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+  font-size: 13px;
+}
+
+.pos-order-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(209, 213, 219, 0.9);
+}
+
+.pos-order-line:last-child {
+  border-bottom: none;
+}
+
+.pos-order-line-name {
+  font-weight: 500;
+}
+
+.pos-order-line-sub {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* Knoppen per regel */
+.pos-order-line-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pos-qty-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  background: #e5e7eb;
+  color: #111827;
+  font-size: 14px;
+}
+
+.pos-qty-value {
+  min-width: 18px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.pos-remove-button {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+/* Totaalblok */
+.pos-order-summary {
+  border-top: 1px solid rgba(209, 213, 219, 0.9);
+  margin-top: 4px;
+  padding-top: 6px;
+  font-size: 13px;
+}
+
+.pos-order-summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.pos-order-summary-row.total {
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Knoppen onder bon */
+.pos-order-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.pos-secondary-button,
+.pos-pay-button {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+/* secundair = grijs */
+.pos-secondary-button {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* betalen = groen/Gifty */
+.pos-pay-button {
+  background: #22c55e;
+  color: #ecfdf5;
+}
+
+/* ONDERBALK – grote “Gifty-style” knoppen */
+.pos-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.pos-bottom-button {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 10px 12px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+}
+
+.pos-bottom-button:hover {
+  background: #2563eb;
+  color: #f9fafb;
+}
+
+
+/* Zorg dat hoofdcontainer geen dubbele definities conflicteren */
+/* (De bovenstaande definitie van .pos-shell/ .pos-main-area blijft bestaan, maar PosLayout gebruikt .pos-layout) */

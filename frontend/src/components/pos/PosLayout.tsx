@@ -1,10 +1,10 @@
-import { Outlet } from "react-router-dom";
 import { useState } from "react";
+import { Outlet } from "react-router-dom";
 import POSMenuButton from "./POSMenuButton";
 import POSSidebar from "./POSSidebar";
 import POSSidebarOverlay from "./POSSidebarOverlay";
 
-export type MenuItem = { label: string; to: string; key: string };
+export type MenuItem = { key: string; label: string; to: string };
 
 const menuItems: MenuItem[] = [
   { key: "cashier", label: "Kassa", to: "/pos/kassa" },

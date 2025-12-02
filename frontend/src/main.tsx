@@ -4,6 +4,10 @@ import App from "./App";
 import "bootstrap/dist/css/bootstrap-grid.min.css";
 import "bootstrap/dist/css/bootstrap-utilities.min.css";
 
+import "./dashboard.css";
+import "./styles/pos/pos.css";
+
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <App />

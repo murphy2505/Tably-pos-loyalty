@@ -8,7 +8,7 @@ import MainShell from "./layouts/MainShell";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 
 // POS
-import PosLayout from "./pages/pos/PosLayout";   // ⬅️ NIEUW: POS layout
+import PosLayout from "./components/pos/PosLayout";   // ⬅️ NIEUW: POS layout
 import PosPage from "./pages/pos/PosPage";        // kassascherm
 import PosProductsPage from "./pages/pos/PosProductsPage";
 import PosCategoriesPage from "./pages/pos/PosCategoriesPage";
