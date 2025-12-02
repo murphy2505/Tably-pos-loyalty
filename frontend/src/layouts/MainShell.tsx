@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { ModulesProvider, useModules } from "../context/modulesContext";
 import "./MainShell.css";

@@ -3,7 +3,7 @@ import "../../styles/pos/pos.css";
 import type { PosProduct, PosOrderLine, PosOrderTotals } from "../../types/pos";
 import { fetchPosProducts, calculateTotals } from "../../services/posService";
 import { createPosOrder, type PaymentMethod } from "../../services/ordersService";
-import { createKdsTicket } from "../../services/kdsService";
+import { createKdsTicket, type KdsStatus } from "../../services/kdsService";
 
 const categories = ["Populair", "Friet", "Snacks", "Menu's", "Drinken"];
 
@@ -174,8 +174,13 @@ export default function PosPage() {
       // 2. KDS ticket aanmaken
       await createKdsTicket({
         id: result.orderId,
-        ticketNumber: result.ticketNumber,
-        items: orderLines.map((l) => ({ name: l.name, qty: l.qty })),
+        items: orderLines.map((l) => ({
+          id: `${result.orderId}-${l.productId}`,
+          productId: String(l.productId),
+          name: l.name,
+          quantity: l.qty,
+        })),
+        status: "open" as KdsStatus, // or another valid KdsStatus value
       });
 
       console.log("Order + KDS ticket created:", result);

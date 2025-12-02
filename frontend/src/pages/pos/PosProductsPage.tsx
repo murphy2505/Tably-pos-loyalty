@@ -1,10 +1,25 @@
-const PosProductsPage = () => {
+import { useEffect, useState } from "react";
+import { getProducts } from "../../api/pos/products";
+
+export default function PosProductsPage() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    (async () => setProducts(await getProducts()))();
+  }, []);
+
   return (
-    <div style={{ color: "#e5e7eb" }}>
-      <h2>POS Producten</h2>
-      <p>Hier komt later het productbeheer voor de kassa.</p>
+    <div className="pos-products-page">
+      <h2>Producten</h2>
+
+      <div className="product-list">
+        {products.map((p: any) => (
+          <div key={p.id} className="product-item mint-card">
+            <div className="product-name">{p.name}</div>
+            <div className="product-price">€ {p.price}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default PosProductsPage;
+}

@@ -8,7 +8,8 @@ import MainShell from "./layouts/MainShell";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 
 // POS
-import PosPage from "./pages/pos/PosPage";
+import PosLayout from "./pages/pos/PosLayout";   // ⬅️ NIEUW: POS layout
+import PosPage from "./pages/pos/PosPage";        // kassascherm
 import PosProductsPage from "./pages/pos/PosProductsPage";
 import PosCategoriesPage from "./pages/pos/PosCategoriesPage";
 import PosStockPage from "./pages/pos/PosStockPage";
@@ -31,21 +32,28 @@ export function AppRoutes() {
     <Routes>
       {/* Global layout */}
       <Route element={<MainShell />}>
-        
         {/* Dashboard */}
         <Route path="/dashboard" element={<DashboardPage />} />
 
-        {/* POS modules */}
-        <Route path="/pos" element={<PosPage />} />
-        <Route path="/pos/products" element={<PosProductsPage />} />
-        <Route path="/pos/categories" element={<PosCategoriesPage />} />
-        <Route path="/pos/stock" element={<PosStockPage />} />
-        <Route path="/pos/reports" element={<PosReportsPage />} />
-        <Route path="/pos/customers" element={<PosCustomersPage />} />
-        <Route path="/pos/giftcards" element={<PosGiftcardsPage />} />
-        <Route path="/pos/planning" element={<PosPlanningPage />} />
-        <Route path="/pos/tables" element={<PosTablesPage />} />
-        <Route path="/pos/kds" element={<KdsPage />} />
+        {/* POS layout: hier zit bootstrap + hamburger etc. */}
+        <Route path="/pos" element={<PosLayout />}>
+          {/* default: /pos → direct naar kassa */}
+          <Route index element={<Navigate to="kassa" replace />} />
+
+          {/* Kassascherm zelf */}
+          <Route path="kassa" element={<PosPage />} />
+
+          {/* POS beheer / submodules */}
+          <Route path="products" element={<PosProductsPage />} />
+          <Route path="categories" element={<PosCategoriesPage />} />
+          <Route path="stock" element={<PosStockPage />} />
+          <Route path="reports" element={<PosReportsPage />} />
+          <Route path="customers" element={<PosCustomersPage />} />
+          <Route path="giftcards" element={<PosGiftcardsPage />} />
+          <Route path="planning" element={<PosPlanningPage />} />
+          <Route path="tables" element={<PosTablesPage />} />
+          <Route path="kds" element={<KdsPage />} />
+        </Route>
 
         {/* Loyalty */}
         <Route path="/loyalty" element={<LoyaltyPage />} />

@@ -1,6 +1,9 @@
-import React from "react";
+type Props = {
+  open: boolean;
+  onClose: () => void;
+};
 
-export default function POSSidebarOverlay({ visible, onClick }: { visible: boolean; onClick(): void }) {
-  if (!visible) return null;
-  return <div className="pos-overlay" onClick={onClick} />;
+export default function POSSidebarOverlay({ open, onClose }: Props) {
+  if (!open) return null;
+  return <div className="pos-sidebar-overlay" onClick={onClose} />;
 }

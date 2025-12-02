@@ -1,507 +1,110 @@
-/* POS Page wrapper */
-.pos-page {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.pos-shell {
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background: #0e1116; /* dark gradient pro */
+}
+
+.pos-main-area.mint-glass {
+  backdrop-filter: saturate(180%) blur(22px);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
   padding: 16px;
-  height: calc(100vh - 56px); /* account for dashboard header */
-}
-
-/* Main area with two columns */
-.pos-main {
-  display: flex;
-  gap: 12px;
-  height: calc(100vh - 140px); /* leaves room for header + bottom bar */
-}
-
-.pos-columns {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-}
-
-/* Left column: products */
-.pos-left {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Right column: order */
-.pos-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(18px);
-  border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  padding: 12px;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
-}
-
-/* Category bar */
-.pos-category-bar {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(148, 163, 184, 0.45);
-}
-
-.pos-category-button {
-  border: none;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  background: transparent;
-  color: #e5e7eb;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.pos-category-button.is-active {
-  background: linear-gradient(135deg, #34d399, #22c55e);
-  color: #020617;
-  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.45);
-}
-
-/* Products container: glass style */
-.pos-products {
-  flex: 1;
-  overflow: hidden;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at top left, rgba(45, 212, 191, 0.18), transparent 60%),
-    rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  backdrop-filter: blur(22px);
-  padding: 12px;
-}
-
-/* Products grid */
-.pos-products-grid {
-  height: 100%;
+  margin: 12px;
+  height: calc(100vh - 24px);
   overflow-y: auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+  box-shadow: 0 0 30px rgba(0, 255, 180, 0.15);
 }
 
-/* Product card */
-.pos-product-card {
-  border-radius: 14px;
-  padding: 10px 12px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
-}
-
-.pos-product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.8);
-  border-color: rgba(52, 211, 153, 0.7);
-}
-
-.pos-product-card-header {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  justify-content: space-between;
-}
-
-.pos-product-name {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #f9fafb;
-}
-
-.pos-product-price {
-  margin-top: 4px;
-  font-weight: 500;
-  color: #a5b4fc;
-}
-
-/* Optional badge */
-.pos-product-badge {
-  align-self: flex-start;
-  margin-top: 6px;
-  font-size: 0.7rem;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(52, 211, 153, 0.18);
-  color: #bbf7d0;
-  border: 1px solid rgba(52, 211, 153, 0.35);
-}
-
-/* Add button (support both class names) */
-.pos-product-add-button,
-.pos-product-add {
-  margin-top: 10px;
-  align-self: flex-end;
-  border-radius: 999px;
-  border: none;
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  background: rgba(15, 23, 42, 0.9);
-  color: #a5b4fc;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.6);
-}
-
-/* Order area */
-.pos-order-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.pos-order-title {
-  font-weight: 600;
-  color: #e5e7eb;
-}
-
-.pos-order-status {
-  font-size: 0.75rem;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(52, 211, 153, 0.16);
-  color: #bbf7d0;
-  border: 1px solid rgba(52, 211, 153, 0.5);
-}
-
-.pos-order-lines {
-  flex: 1;
-  margin-top: 4px;
-  padding-top: 4px;
-  border-top: 1px dashed rgba(75, 85, 99, 0.8);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.pos-order-line {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  font-size: 0.85rem;
-  color: #e5e7eb;
-}
-
-.pos-order-line-left {
-  display: flex;
-  flex-direction: column;
-}
-
-.pos-order-line-name {
-  font-weight: 600;
-}
-
-.pos-order-line-meta {
-  font-size: 0.75rem;
-  color: #94a3b8;
-}
-
-.pos-order-line-total {
-  font-weight: 600;
-}
-
-/* Order summary */
-.pos-order-summary {
-  margin-top: 8px;
-  border-top: 1px solid rgba(55, 65, 81, 0.9);
-  padding-top: 8px;
-  font-size: 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.pos-order-summary-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.pos-order-summary-row.total,
-.pos-order-summary-total {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #f9fafb;
-}
-
-/* Pay button */
-.pos-pay-button {
-  margin-top: 10px;
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: none;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  background: linear-gradient(135deg, #22c55e, #2dd4bf);
-  color: #020617;
-  box-shadow: 0 18px 38px rgba(34, 197, 94, 0.55);
-}
-
-.pos-pay-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.9);
-}
-
-/* Bottom action bar */
-.pos-bottom-bar {
-  display: flex;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.5);
-}
-
-.pos-bottom-button {
-  flex: 1;
-  border-radius: 999px;
-  border: none;
-  padding: 6px 10px;
-  background: transparent;
-  color: #e5e7eb;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.pos-bottom-button:hover {
-  background: rgba(30, 64, 175, 0.55);
-}
-
-/* Color hints for product cards (optional) */
-.pos-color-green { border-color: rgba(34, 197, 94, 0.45); }
-.pos-color-orange { border-color: rgba(245, 158, 11, 0.45); }
-.pos-color-blue { border-color: rgba(59, 130, 246, 0.45); }
-.pos-color-purple { border-color: rgba(139, 92, 246, 0.45); }
-.pos-color-red { border-color: rgba(239, 68, 68, 0.45); }
-.pos-color-teal { border-color: rgba(13, 148, 136, 0.45); }
-.pos-color-default { border-color: rgba(148, 163, 184, 0.35); }
-
-/* Quantity controls in order lines */
-.pos-order-line-controls {
-  display: grid;
-  grid-template-columns: auto auto auto auto 1fr;
-  align-items: center;
-  gap: 6px;
-}
-
-.pos-qty-button {
-  background: rgba(30,41,59,0.7);
-  border: 1px solid rgba(148,163,184,0.4);
-  color: #e5e7eb;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.pos-qty-button:hover {
-  background: rgba(51,65,85,0.9);
-}
-
-.pos-qty-value {
-  color: #f9fafb;
-  font-weight: 600;
-  min-width: 20px;
-  text-align: center;
-}
-
-.pos-remove-button {
-  background: rgba(239,68,68,0.15);
-  border: 1px solid rgba(239,68,68,0.4);
-  color: #fca5a5;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.pos-remove-button:hover {
-  background: rgba(239,68,68,0.3);
-}
-
-/* Desktop-first */
-@media (min-width: 1024px) {
-  .pos-products-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-}
-
-.pos-parked-orders {
-  margin-top: 4px;
-  margin-bottom: 8px;
-  padding: 6px 8px;
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-}
-
-.pos-parked-title {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #9ca3af;
-}
-
-.pos-parked-list {
-  margin-top: 4px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.pos-parked-empty {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.pos-parked-chip {
-  border: none;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  background: rgba(15, 118, 110, 0.25);
-  color: #a5f3fc;
-}
-
-.pos-parked-chip:hover {
-  background: rgba(8, 47, 73, 0.8);
-}
-
-.pos-order-actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 8px;
-}
-
-/* Payment overlay styles */
-.pos-pay-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 40;
-}
-
-.pos-pay-panel {
-  width: 360px;
-  max-width: 95vw;
-  background: rgba(15, 23, 42, 0.96);
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  padding: 16px 18px;
-  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.9);
-}
-
-.pos-pay-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.pos-pay-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #e5e7eb;
-}
-
-.pos-pay-close {
-  border: none;
-  background: transparent;
-  color: #9ca3af;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.pos-pay-amount {
+/* Mint cards */
+.mint-card {
+  background: rgba(0, 255, 180, 0.10);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 255, 180, 0.25);
+  padding: 14px;
   margin-bottom: 10px;
-  font-size: 0.95rem;
-  color: #e5e7eb;
+  border-radius: 18px;
+  transition: 0.15s ease;
 }
-
-.pos-pay-methods {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.pos-pay-method {
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  background: rgba(15, 23, 42, 0.9);
-  color: #e5e7eb;
-  padding: 8px 10px;
-  font-size: 0.85rem;
+.mint-card:hover {
+  background: rgba(0, 255, 180, 0.22);
   cursor: pointer;
-  text-align: center;
 }
 
-.pos-pay-method.is-selected {
-  background: linear-gradient(135deg, #22c55e, #2dd4bf);
-  color: #020617;
-  border-color: transparent;
+/* Hamburger button */
+.pos-menu-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.22);
 }
 
-.pos-pay-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+/* Sidebar slide */
+.pos-sidebar {
+  width: 260px;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(12px);
+  padding: 20px;
 }
-
-.pos-pay-confirm {
-  border: none;
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  background: linear-gradient(135deg, #22c55e, #2dd4bf);
-  color: #020617;
-}
-
-.pos-pay-confirm:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-/* ⭐ VASTE TILE AFMETINGEN – voorkomt verticaal rekken */
-.pos-products-grid {
-  grid-auto-rows: 160px !important;   /* vaste hoogte */
-}
-
-/* ⭐ PRODUCTCARD: gedwongen vaste hoogte + inhoud gefixeerd */
-.pos-product-card {
-  height: 100% !important;            /* vult volledige tile */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;     /* content blijft verdeeld */
-}
-
-/* ⭐ PRODUCTNAAM: max 2 regels – voorkomt tile-rekken */
-.pos-product-name {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;              /* maximaal 2 regels */
-  -webkit-box-orient: vertical;
+.pos-shell {
+  height: 100vh;
+  width: 100%;
   overflow: hidden;
+  position: relative;
+  background: #0e1116; /* dark gradient pro */
+}
+
+.pos-main-area.mint-glass {
+  backdrop-filter: saturate(180%) blur(22px);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 16px;
+  margin: 12px;
+  height: calc(100vh - 24px);
+  overflow-y: auto;
+  box-shadow: 0 0 30px rgba(0, 255, 180, 0.15);
+}
+
+/* Mint cards */
+.mint-card {
+  background: rgba(0, 255, 180, 0.10);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 255, 180, 0.25);
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: 18px;
+  transition: 0.15s ease;
+}
+.mint-card:hover {
+  background: rgba(0, 255, 180, 0.22);
+  cursor: pointer;
+}
+
+/* Hamburger button */
+.pos-menu-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.22);
+}
+
+/* Sidebar slide */
+.pos-sidebar {
+  width: 260px;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(12px);
+  padding: 20px;
 }

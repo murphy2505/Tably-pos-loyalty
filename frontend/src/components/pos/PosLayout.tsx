@@ -1,91 +1,40 @@
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useModules } from "../../context/modulesContext";
-import "./PosLayout.css";
+import { Outlet } from "react-router-dom";
+import { useState } from "react";
+import POSMenuButton from "./POSMenuButton";
+import POSSidebar from "./POSSidebar";
+import POSSidebarOverlay from "./POSSidebarOverlay";
 
-const PosLayout = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { modules } = useModules();
+export type MenuItem = { label: string; to: string; key: string };
 
-  const isActive = (sub: string) => {
-    const full = `/pos${sub ? `/${sub}` : ""}`;
-    return location.pathname === full;
-  };
+const menuItems: MenuItem[] = [
+  { key: "cashier", label: "Kassa", to: "/pos/kassa" },
+  { key: "products", label: "Producten", to: "/pos/products" },
+  { key: "categories", label: "Categorieën", to: "/pos/categories" },
+  { key: "stock", label: "Voorraad", to: "/pos/stock" },
+  { key: "kds", label: "KDS", to: "/pos/kds" },
+  { key: "reports", label: "Rapportage", to: "/pos/reports" },
+  { key: "customers", label: "Klanten", to: "/pos/customers" },
+  { key: "giftcards", label: "Kadokaarten", to: "/pos/giftcards" },
+  { key: "planning", label: "Planning", to: "/pos/planning" },
+  { key: "settings", label: "Instellingen", to: "/pos/settings" },
+];
+
+export default function PosLayout() {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="pos-root">
-      <header className="pos-topbar">
-        <div className="pos-brand" onClick={() => navigate("/pos/kassa")}>
-          Tably POS
-        </div>
-        <button
-          className="pos-hamburger"
-          aria-label="Open POS menu"
-          onClick={() => {
-            console.log("Open POS menu (tafels, printer, SumUp, instellingen)");
-          }}
-        >
-          ☰
-        </button>
+    <div className="pos-layout">
+      <header className="pos-layout-header">
+        <POSMenuButton onClick={() => setOpen(true)} />
+        <div className="pos-layout-title">Tably POS</div>
       </header>
 
-      <div className="pos-main">
+      <POSSidebar open={open} onClose={() => setOpen(false)} items={menuItems} />
+      <POSSidebarOverlay open={open} onClose={() => setOpen(false)} />
+
+      <main className="pos-layout-content">
         <Outlet />
-      </div>
-
-      <footer className="pos-bottombar">
-        {modules.pos && (
-          <NavLink
-            to="/pos/kassa"
-            className={
-              isActive("kassa") ? "pos-bottom-btn active" : "pos-bottom-btn"
-            }
-          >
-            Kassa
-          </NavLink>
-        )}
-
-        {/* tafels kun je later koppelen aan losse module als je wilt */}
-        <NavLink
-          to="/pos/tables"
-          className={
-            isActive("tables") ? "pos-bottom-btn active" : "pos-bottom-btn"
-          }
-        >
-          Tafels
-        </NavLink>
-
-        {modules.kds && (
-          <NavLink
-            to="/pos/kds"
-            className={
-              isActive("kds") ? "pos-bottom-btn active" : "pos-bottom-btn"
-            }
-          >
-            KDS
-          </NavLink>
-        )}
-
-        {modules.customers && (
-          <NavLink to="/dashboard/customers" className="pos-bottom-btn">
-            Klanten
-          </NavLink>
-        )}
-
-        {modules.loyalty && (
-          <NavLink to="/dashboard/settings" className="pos-bottom-btn">
-            Kadokaart / Loyalty
-          </NavLink>
-        )}
-
-        {modules.settings && (
-          <NavLink to="/dashboard/settings" className="pos-bottom-btn">
-            Planning
-          </NavLink>
-        )}
-      </footer>
+      </main>
     </div>
   );
-};
-
-export default PosLayout;
+}

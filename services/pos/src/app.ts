@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+
 import healthRouter from "./routes/health";
 import kdsRoutes from "./routes/kdsRoutes";
 import tablesRouter from "./routes/tables";
@@ -10,8 +11,11 @@ import categoriesRoutes from "./routes/categories";
 import productsRoutes from "./routes/products";
 import variantsRoutes from "./routes/variants";
 import stockRoutes from "./routes/stock";
-import ordersRoutes from "./routes/orders"; // consistent alias
+import ordersRoutes from "./routes/orders";
 import customersRouter from "./routes/customersRouter";
+
+// 🔹 NIEUW: POS bootstrap
+import bootstrapRouter from "./routes/bootstrap";
 
 const app = express();
 
@@ -42,5 +46,11 @@ app.use("/pos/core/stock", authMiddleware, stockRoutes);
  * Klantdata is single source of truth in loyalty-service.
  */
 app.use("/pos/customers", authMiddleware, customersRouter);
+
+/**
+ * 🔹 POS bootstrap (volledige set data voor producten/menus/modifiers)
+ * Ook gewoon achter auth, want dit is hele POS-config.
+ */
+app.use("/pos/bootstrap", authMiddleware, bootstrapRouter);
 
 export default app;

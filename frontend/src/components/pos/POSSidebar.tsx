@@ -32,8 +32,13 @@ export default function POSSidebar({ open, onClose, role }: POSSidebarProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
+  function handleClick(to: string) {
+    navigate(to);
+    onClose();
+  }
+
   return (
-    <aside className={"pos-sidebar" + (open ? " pos-sidebar-open" : "")} role="navigation">
+    <aside className={"pos-sidebar" + (open ? " open" : "")} role="navigation">
       <div className="pos-sidebar-header">
         <div className="pos-sidebar-title">POS Menu</div>
         <button className="pos-sidebar-close" type="button" onClick={onClose}>
@@ -45,8 +50,10 @@ export default function POSSidebar({ open, onClose, role }: POSSidebarProps) {
           <button
             key={i.key}
             type="button"
-            className={"pos-menu-item" + (location.pathname === i.path ? " is-active" : "")}
-            onClick={() => navigate(i.path)}
+            onClick={() => handleClick(i.path)}
+            className={
+              "pos-menu-item" + (location.pathname === i.path ? " is-active" : "")
+            }
           >
             {i.label}
           </button>
