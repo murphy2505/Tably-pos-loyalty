@@ -485,3 +485,23 @@
   cursor: default;
 }
 
+/* ⭐ VASTE TILE AFMETINGEN – voorkomt verticaal rekken */
+.pos-products-grid {
+  grid-auto-rows: 160px !important;   /* vaste hoogte */
+}
+
+/* ⭐ PRODUCTCARD: gedwongen vaste hoogte + inhoud gefixeerd */
+.pos-product-card {
+  height: 100% !important;            /* vult volledige tile */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;     /* content blijft verdeeld */
+}
+
+/* ⭐ PRODUCTNAAM: max 2 regels – voorkomt tile-rekken */
+.pos-product-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;              /* maximaal 2 regels */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

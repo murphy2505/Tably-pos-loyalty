@@ -15,64 +15,94 @@ model Category {
   order     Int
   parentId  String?
   products  Product[]
+
+  @@index([tenantId])
+}
+
+model RevenueGroup {
+  id        String   @id @default(cuid())
+  name      String
+  color     String?      // optioneel label-kleur in POS
+  products  Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  tenantId    String
-  categoryId  String
-  name        String
-  active      Boolean  @default(true)
-  vatRate     Float    @default(9)
-  tileColor   String?
-  tileIcon    String?
-  variants    ProductVariant[]
+  id             String        @id @default(cuid())
+  tenantId       String
+  categoryId     String
+  name           String
+  active         Boolean       @default(true)
+  vatRate        Float         @default(9)
+  tileColor      String?
+  tileIcon       String?
+
+  // relaties
+  category       Category      @relation(fields: [categoryId], references: [id])
+
+  revenueGroupId String?
+  revenueGroup   RevenueGroup? @relation(fields: [revenueGroupId], references: [id])
+
+  variants       ProductVariant[]
 
   @@index([tenantId])
   @@index([categoryId])
+  @@index([revenueGroupId])
 }
 
 model ProductVariant {
-  id          String  @id @default(cuid())
-  productId   String
-  name        String
-  price       Float
-  sku         String?
-  pluCode     String?
-  active      Boolean @default(true)
-  ingredients ProductIngredient[]
+  id           String            @id @default(cuid())
+  productId    String
+  name         String
+  price        Float
+  sku          String?
+  pluCode      String?
+  active       Boolean           @default(true)
+
+  product      Product           @relation(fields: [productId], references: [id])
+  ingredients  ProductIngredient[]
+  orderItems   OrderItem[]
 
   @@index([productId])
 }
 
 model StockItem {
-  id        String   @id @default(cuid())
-  tenantId  String
-  name      String
-  unit      String
-  quantity  Float    @default(0)
-  minimum   Float    @default(0)
-  movements StockMovement[]
+  id          String             @id @default(cuid())
+  tenantId    String
+  name        String
+  unit        String
+  quantity    Float              @default(0)
+  minimum     Float              @default(0)
+
+  movements   StockMovement[]
+  ingredients ProductIngredient[]
 
   @@index([tenantId])
 }
 
 model ProductIngredient {
-  id          String  @id @default(cuid())
+  id          String         @id @default(cuid())
   variantId   String
   stockItemId String
   amount      Float
+
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+  stockItem   StockItem      @relation(fields: [stockItemId], references: [id])
 
   @@index([variantId])
   @@index([stockItemId])
 }
 
 model StockMovement {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   stockItemId String
-  type        String   // PURCHASE | SALE | WASTE | ADJUSTMENT
+  type        String    // PURCHASE | SALE | WASTE | ADJUSTMENT
   amount      Float
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
+
+  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
 
   @@index([stockItemId])
   @@index([createdAt])
@@ -95,6 +125,7 @@ model Order {
   tableId    String?
   status     String      // OPEN | PAID | CANCELLED
   createdAt  DateTime    @default(now())
+
   items      OrderItem[]
   payments   Payment[]
 
@@ -105,12 +136,15 @@ model Order {
 }
 
 model OrderItem {
-  id            String   @id @default(cuid())
+  id            String         @id @default(cuid())
   orderId       String
   variantId     String
   quantity      Int
   priceEach     Float
-  discount      Float    @default(0)
+  discount      Float          @default(0)
+
+  order         Order          @relation(fields: [orderId], references: [id])
+  variant       ProductVariant @relation(fields: [variantId], references: [id])
 
   @@index([orderId])
   @@index([variantId])
@@ -122,6 +156,8 @@ model Payment {
   method      String   // CASH | PIN | OTHER
   amount      Float
   createdAt   DateTime @default(now())
+
+  order       Order    @relation(fields: [orderId], references: [id])
 
   @@index([orderId])
   @@index([createdAt])

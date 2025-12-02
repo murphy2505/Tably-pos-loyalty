@@ -1,19 +1,16 @@
 import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { ModulesProvider, useModules } from "../context/modulesContext";
 import "./MainShell.css";
 
-interface MainShellProps {
-  children: ReactNode;
-}
-
-const MainShellInner = ({ children }: MainShellProps) => {
+const MainShellInner = () => {
   const { modules } = useModules();
 
   return (
     <div className="tably-root">
       <aside className="tably-sidebar">
         <div className="tably-logo">Tably</div>
+
         <nav className="tably-nav">
           <NavLink
             to="/dashboard"
@@ -47,15 +44,19 @@ const MainShellInner = ({ children }: MainShellProps) => {
           )}
         </nav>
       </aside>
-      <main className="tably-main">{children}</main>
+
+      {/* PAGE CONTENT LOADER */}
+      <main className="tably-main">
+        <Outlet />
+      </main>
     </div>
   );
 };
 
-const MainShell = ({ children }: MainShellProps) => {
+const MainShell = () => {
   return (
     <ModulesProvider>
-      <MainShellInner>{children}</MainShellInner>
+      <MainShellInner />
     </ModulesProvider>
   );
 };
