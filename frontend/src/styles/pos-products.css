@@ -1,0 +1,303 @@
+.pos-products-page {
+  height: 100%;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #0f172a;
+}
+
+/* Header */
+.pos-products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.pos-products-header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.pos-products-header p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.pos-products-header-meta {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* Filters */
+.pos-products-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pos-products-search {
+  flex: 1;
+  min-width: 180px;
+}
+
+.pos-products-search input {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(248, 250, 252, 0.95);
+  font-size: 13px;
+  outline: none;
+}
+
+.pos-products-search input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
+}
+
+.pos-products-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.pos-products-filter-label {
+  opacity: 0.7;
+}
+
+.pos-products-filter-group select {
+  padding: 6px 26px 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(248, 250, 252, 0.95);
+  font-size: 13px;
+  outline: none;
+}
+
+/* Status + errors */
+.pos-products-status {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.pos-products-error {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  font-size: 13px;
+}
+
+/* Table wrapper (light card à la kassa) */
+.pos-products-table-card {
+  flex: 1;
+  min-height: 0;
+  background: #f5f7fb;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+  overflow: auto;
+}
+
+/* Empty state */
+.pos-products-empty {
+  font-size: 13px;
+  opacity: 0.7;
+  padding: 10px;
+}
+
+/* Tabel zelf */
+.pos-products-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px; /* ruimte tussen 'blokken' */
+  font-size: 13px;
+}
+
+.pos-products-table thead th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  padding: 4px 10px;
+  font-weight: 500;
+}
+
+.pos-products-table tbody tr {
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.pos-products-table tbody td {
+  background: #ffffff;
+  padding: 7px 10px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+/* ronde hoeken per 'blok' */
+.pos-products-table tbody td:first-child {
+  border-left: 1px solid rgba(226, 232, 240, 0.9);
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.pos-products-table tbody td:last-child {
+  border-right: 1px solid rgba(226, 232, 240, 0.9);
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* Productcel */
+.pos-products-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pos-products-product-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #e5f0ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.pos-products-product-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pos-products-product-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.pos-products-product-short {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.pos-products-product-desc {
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+/* Categorie */
+.pos-products-category {
+  font-size: 12px;
+}
+
+/* Variants chips */
+.pos-products-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pos-products-variant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  font-size: 11px;
+}
+
+.pos-products-variant-name {
+  font-weight: 500;
+}
+
+.pos-products-variant-price {
+  opacity: 0.8;
+}
+
+/* BTW */
+.pos-products-btw {
+  font-size: 12px;
+}
+
+/* Status toggle (dummy, nog niet interactief) */
+.pos-products-status-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.pos-products-status-label {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.pos-products-switch {
+  width: 36px;
+  height: 18px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: background 0.15s ease;
+}
+
+.pos-products-switch-knob {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  transform: translateX(0);
+  transition: transform 0.15s ease;
+}
+
+.pos-products-switch.is-on {
+  background: #22c55e;
+}
+
+.pos-products-switch.is-on .pos-products-switch-knob {
+  transform: translateX(16px);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .pos-products-table-card {
+    padding: 8px;
+  }
+
+  .pos-products-table thead {
+    display: none;
+  }
+
+  .pos-products-table,
+  .pos-products-table tbody,
+  .pos-products-table tr,
+  .pos-products-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .pos-products-table tbody tr {
+    margin-bottom: 8px;
+  }
+
+  .pos-products-table tbody td {
+    border-radius: 0;
+    border: none;
+  }
+
+  .pos-products-table tbody td:first-child,
+  .pos-products-table tbody td:last-child {
+    border-radius: 0;
+  }
+}

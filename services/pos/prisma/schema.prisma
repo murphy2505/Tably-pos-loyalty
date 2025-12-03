@@ -1,6 +1,7 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider     = "sqlite"
+  url          = "file:./dev.db"
+  relationMode = "prisma"
 }
 
 generator client {
@@ -90,8 +91,6 @@ model Product {
   revenueGroup   RevenueGroup? @relation(fields: [revenueGroupId], references: [id])
 
   variants       ProductVariant[]
-  modifierGroups ProductModifierGroup[]
-  menuItems      MenuItem[]
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -115,7 +114,6 @@ model ProductVariant {
   product      Product   @relation(fields: [productId], references: [id])
   ingredients  ProductIngredient[]
   orderItems   OrderItem[]
-  menuItems    MenuItem[]
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -294,150 +292,4 @@ model Payment {
   @@index([orderId])
   @@index([createdAt])
   @@index([employeeId])
-}
-
-//
-// ==========================
-//  MENUKAARTEN
-// ==========================
-//
-
-model MenuCard {
-  id          String    @id @default(cuid())
-  tenantId    String
-  name        String
-  type        String?      // Lunch, Diner, Snacks, Kiosk
-  theme       String?
-  isPrimary   Boolean  @default(false)
-
-  activeFrom  DateTime?
-  activeUntil DateTime?
-
-  startTime   String?
-  endTime     String?
-  daysOfWeek  String?      // MON,TUE,...
-
-  items       MenuItem[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([tenantId])
-}
-
-model MenuItem {
-  id               String          @id @default(cuid())
-  menuCardId       String
-  productId        String
-  variantId        String?
-  sortOrder        Int             @default(0)
-  isHidden         Boolean         @default(false)
-
-  visibleOnPos      Boolean        @default(true)
-  visibleOnKiosk    Boolean        @default(true)
-  visibleOnWeb      Boolean        @default(true)
-  visibleOnDelivery Boolean        @default(true)
-
-  priceOverride     Decimal?
-
-  menuCard          MenuCard       @relation(fields: [menuCardId], references: [id])
-  product           Product        @relation(fields: [productId], references: [id])
-  variant           ProductVariant? @relation(fields: [variantId], references: [id])
-
-  @@index([menuCardId])
-  @@index([productId])
-}
-
-//
-// ==========================
-//  MODIFIERS
-// ==========================
-//
-
-model ModifierGroup {
-  id        String   @id @default(cuid())
-  tenantId  String
-  name      String
-
-  required  Boolean  @default(false)
-  minSelect Int      @default(0)
-  maxSelect Int?
-  sortOrder Int      @default(0)
-
-  options   ModifierOption[]
-  products  ProductModifierGroup[]
-
-  @@index([tenantId])
-}
-
-model ModifierOption {
-  id         String         @id @default(cuid())
-  groupId    String
-  name       String
-  priceDelta Decimal        @default(0)
-  icon       String?
-  color      String?
-  sortOrder  Int            @default(0)
-
-  group      ModifierGroup  @relation(fields: [groupId], references: [id])
-}
-
-model ProductModifierGroup {
-  id               String   @id @default(cuid())
-  productId        String
-  groupId          String
-  sortOrder        Int      @default(0)
-  required         Boolean  @default(false)
-
-  visibleOnPos      Boolean @default(true)
-  visibleOnKiosk    Boolean @default(true)
-  visibleOnWeb      Boolean @default(true)
-
-  product          Product        @relation(fields: [productId], references: [id])
-  group            ModifierGroup  @relation(fields: [groupId], references: [id])
-
-  @@index([productId])
-  @@index([groupId])
-}
-
-//
-// ==========================
-//  PRICE RULES (HAPPY HOUR)
-// ==========================
-//
-
-model PriceRule {
-  id              String    @id @default(cuid())
-  tenantId        String
-  name            String
-
-  productId       String?
-  variantId       String?
-  categoryId      String?
-  revenueGroupId  String?
-  menuCardId      String?
-
-  amountOff       Decimal?
-  percentOff      Decimal?
-  newPrice        Decimal?
-
-  startTime       String?
-  endTime         String?
-  daysOfWeek      String?
-  dateFrom        DateTime?
-  dateUntil       DateTime?
-
-  appliesPos      Boolean   @default(true)
-  appliesKiosk    Boolean   @default(true)
-  appliesWeb      Boolean   @default(true)
-
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@index([tenantId])
-  @@index([productId])
-  @@index([variantId])
-  @@index([categoryId])
-  @@index([revenueGroupId])
-  @@index([menuCardId])
 }
