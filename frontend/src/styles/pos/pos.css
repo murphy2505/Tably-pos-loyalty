@@ -282,19 +282,18 @@
 /* HOOFD-POSKAART – vult de hoogte, zodat bottom-bar blijft staan */
 .pos-page.mint-glass-card {
   width: 100%;
-  max-width: 1380px;
+  max-width: 1280px; /* iets smaller */
   background: #f5f7fb;
-  border-radius: 22px;
+  border-radius: 20px;
   border: 1px solid rgba(148, 163, 184, 0.6);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
-  padding: 16px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.2);
+  padding: 12px 14px;   /* minder padding */
   display: flex;
   flex-direction: column;
-  gap: 12px;
-
-  /* 🔑 kaart gebruikt hele hoogte onder de header */
-  height: calc(100vh - 64px - 32px); /* 64px header, 2×16px padding layout */
+  gap: 10px;
+  height: calc(100vh - 64px - 32px); /* hoogte mag zo blijven */
 }
+
 
 /* Middenstuk (tegels + bon) scrollt binnen de kaart */
 .pos-main {
@@ -361,9 +360,26 @@
 /* Product-grid kaarten in mint-glass stijl */
 .pos-products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 10px;
 }
+
+/* vaste hoogte / layout van tegels */
+.pos-product-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  color: #111827;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+
+  height: 110px;       /* 🔑 vaste hoogte */
+}
+
 
 .pos-product-card {
   border: none;
@@ -439,7 +455,7 @@
   justify-content: center;
 }
 
-/* HOOFD-POSKAART (licht, fris, beetje Gifty/Booq) */
+/* HOOFD-POSKAART – vult de hoogte, zodat bottom-bar blijft staan */
 .pos-page.mint-glass-card {
   width: 100%;
   max-width: 1380px;
@@ -451,13 +467,19 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  /* 🔑 kaart gebruikt hele hoogte onder de header */
+  height: calc(100vh - 64px - 32px); /* 64px header, 2×16px padding layout */
 }
 
-/* Twee kolommen: links producten, rechts bon */
+/* Middenstuk (tegels + bon) scrollt binnen de kaart */
 .pos-main {
+  flex: 1;
+  min-height: 0;  /* nodig voor goede flex-scroll */
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 16px;
+  overflow: auto; /* 🔑 alleen dit stuk scrollt */
 }
 
 /* LINKERKANT – productzijde */
@@ -734,6 +756,147 @@
   color: #f9fafb;
 }
 
+.pos-left,
+.pos-order {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pos-products {
+  flex: 1;
+  min-height: 0;
+}
+
+.pos-products-grid {
+  height: 100%;
+  overflow: auto;
+}
+
+.pos-order-lines {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* POS-betaalscherm overlay boven de kassakaart */
+.pos-page.mint-glass-card {
+  position: relative; /* 🔑 nodig voor absolute overlay binnen de kaart */
+}
+
+/* donker glaasje over de hele kaart */
+.pos-pay-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+/* groot betaalscherm in het midden */
+.pos-pay-panel {
+  width: 780px;
+  max-width: 95%;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #111827;
+}
+
+/* header */
+.pos-pay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pos-pay-close {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+}
+
+/* bedrag */
+.pos-pay-amount {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* klant / loyalty blok */
+.pos-pay-loyalty {
+  border-radius: 12px;
+  border: 1px solid rgba(209, 213, 219, 0.9);
+  padding: 8px 10px;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pos-pay-loyalty label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.pos-pay-loyalty input {
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+/* betaalmethodes in rij */
+.pos-pay-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pos-pay-method {
+  flex: 1;
+  min-width: 120px;
+  border-radius: 999px;
+  border: none;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: #e5e7eb;
+}
+
+.pos-pay-method.is-selected {
+  background: #2563eb;
+  color: #f9fafb;
+}
+
+/* onderknoppen */
+.pos-pay-actions {
+  margin-top: 4px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pos-pay-confirm {
+  border-radius: 999px;
+  border: none;
+  padding: 8px 14px;
+  background: #22c55e;
+  color: #ecfdf5;
+  font-size: 14px;
+}
+
+.pos-pay-confirm:disabled {
+  opacity: 0.6;
+}
+
+.pos-secondary-button.pos-pay-cancel {
+  flex: 0 0 auto;
+}
 
 /* Zorg dat hoofdcontainer geen dubbele definities conflicteren */
 /* (De bovenstaande definitie van .pos-shell/ .pos-main-area blijft bestaan, maar PosLayout gebruikt .pos-layout) */
