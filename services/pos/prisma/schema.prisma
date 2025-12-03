@@ -14,25 +14,37 @@ generator client {
 //
 
 model Category {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   tenantId  String
   name      String
   color     String?
   order     Int
   parentId  String?
+
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryHierarchy")
+
   products  Product[]
 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
   @@index([tenantId])
+  @@unique([tenantId, name])
 }
 
 model RevenueGroup {
   id        String   @id @default(cuid())
+  tenantId  String
   name      String
-  color     String?      
+  color     String?
   products  Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@unique([tenantId, name])
 }
 
 //
@@ -57,20 +69,20 @@ model Product {
   description    String?
   shortLabel     String?
   kitchenNotes   String?
-  recipe         String?     // receptuur tekst
-  preparation    String?     // bereidingswijze KDS
+  recipe         String?       // receptuur tekst
+  preparation    String?       // bereidingswijze KDS
 
   // Diet / kenmerken
-  isVegetarian   Boolean @default(false)
-  isVegan        Boolean @default(false)
-  isGlutenFree   Boolean @default(false)
-  isLactoseFree  Boolean @default(false)
+  isVegetarian   Boolean       @default(false)
+  isVegan        Boolean       @default(false)
+  isGlutenFree   Boolean       @default(false)
+  isLactoseFree  Boolean       @default(false)
   spicyLevel     Int?
 
   // POS functionaliteit
-  tracksStock    Boolean @default(false)
+  tracksStock    Boolean       @default(false)
   printGroup     String?
-  isCombo        Boolean @default(false)
+  isCombo        Boolean       @default(false)
 
   // Relations
   category       Category      @relation(fields: [categoryId], references: [id])
@@ -81,30 +93,36 @@ model Product {
   modifierGroups ProductModifierGroup[]
   menuItems      MenuItem[]
 
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
   @@index([tenantId])
   @@index([categoryId])
   @@index([revenueGroupId])
+  @@unique([tenantId, categoryId, name])
 }
 
 model ProductVariant {
   id           String   @id @default(cuid())
   productId    String
   name         String
-  price        Float
-  costPrice    Float?
+  price        Decimal
+  costPrice    Decimal?
   sku          String?
   pluCode      String?
-  active       Boolean   @default(true)
+  active       Boolean  @default(true)
 
   product      Product   @relation(fields: [productId], references: [id])
   ingredients  ProductIngredient[]
   orderItems   OrderItem[]
-  // 🔽 NIEUW: menukaarten die deze variant gebruiken
   menuItems    MenuItem[]
 
-  @@index([productId])
-}
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
+  @@index([productId])
+  @@unique([productId, name])
+}
 
 //
 // ==========================
@@ -113,25 +131,29 @@ model ProductVariant {
 //
 
 model StockItem {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   tenantId    String
   name        String
   unit        String
-  quantity    Float    @default(0)
-  minimum     Float    @default(0)
-  allergens   String?  // CSV of JSON
+  quantity    Decimal   @default(0)
+  minimum     Decimal   @default(0)
+  allergens   String?   // CSV of JSON
 
   movements   StockMovement[]
   ingredients ProductIngredient[]
 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   @@index([tenantId])
+  @@unique([tenantId, name])
 }
 
 model ProductIngredient {
   id          String  @id @default(cuid())
   variantId   String
   stockItemId String
-  amount      Float
+  amount      Decimal
 
   variant     ProductVariant @relation(fields: [variantId], references: [id])
   stockItem   StockItem      @relation(fields: [stockItemId], references: [id])
@@ -141,21 +163,21 @@ model ProductIngredient {
 }
 
 model StockMovement {
-  id          String    @id @default(cuid())
-  stockItemId String
-  type        String    // PURCHASE | SALE | WASTE | ADJUSTMENT | SALE_CANCEL
-  amount      Float
-  createdAt   DateTime  @default(now())
+  id           String    @id @default(cuid())
+  stockItemId  String
+  type         String    // PURCHASE | SALE | WASTE | ADJUSTMENT | SALE_CANCEL
+  amount       Decimal
+  createdAt    DateTime  @default(now())
 
-  employeeId  String?
-  employee    Employee? @relation(fields: [employeeId], references: [id])
+  employeeId   String?
+  employee     Employee? @relation(fields: [employeeId], references: [id])
 
-  orderItemId String?
-  orderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
+  orderItemId  String?
+  orderItem    OrderItem? @relation(fields: [orderItemId], references: [id])
 
   reversalOfId String?
 
-  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+  stockItem    StockItem @relation(fields: [stockItemId], references: [id])
 
   @@index([stockItemId])
   @@index([createdAt])
@@ -170,7 +192,7 @@ model StockMovement {
 //
 
 model Employee {
-  id         String       @id @default(cuid())
+  id         String          @id @default(cuid())
   tenantId   String
   name       String
   pinCode    String?
@@ -189,6 +211,7 @@ model Table {
   locationId String
   name       String
   state      String   // FREE | SEATED | BILL_OPEN
+
   @@index([tenantId, locationId])
 }
 
@@ -199,25 +222,25 @@ model Table {
 //
 
 model Order {
-  id         String      @id @default(cuid())
-  tenantId   String
-  locationId String
-  tableId    String?
-  status     String      
-  createdAt  DateTime    @default(now())
+  id           String      @id @default(cuid())
+  tenantId     String
+  locationId   String
+  tableId      String?
+  status       String
+  createdAt    DateTime    @default(now())
 
   cancelledAt  DateTime?
   cancelReason String?
 
-  employeeId String?
-  employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId   String?
+  employee     Employee? @relation(fields: [employeeId], references: [id])
 
-  deviceId   String?
-  source     String?   // POS | WEB | APP | KIOSK | CALL
-  dineType   String?   // TAKEAWAY | EATIN | DELIVERY
+  deviceId     String?
+  source       String?   // POS | WEB | APP | KIOSK | CALL
+  dineType     String?   // TAKEAWAY | EATIN | DELIVERY
 
-  items      OrderItem[]
-  payments   Payment[]
+  items        OrderItem[]
+  payments     Payment[]
 
   @@index([tenantId, locationId])
   @@index([tableId])
@@ -228,29 +251,28 @@ model Order {
 }
 
 model OrderItem {
-  id            String   @id @default(cuid())
-  orderId       String
-  variantId     String
-  quantity      Int
-  priceEach     Float
-  discount      Float    @default(0)
+  id               String          @id @default(cuid())
+  orderId          String
+  variantId        String
+  quantity         Int
+  priceEach        Decimal
+  discount         Decimal         @default(0)
 
   // --- SNAPSHOTS ---
-  productId         String
-  productName       String
-  variantName       String
-  categoryId        String?
-  categoryName      String?
-  revenueGroupId    String?
-  revenueGroupName  String?
-  vatRateSnapshot   Float
-  allergensSummary  String?
+  productId        String
+  productName      String
+  variantName      String
+  categoryId       String?
+  categoryName     String?
+  revenueGroupId   String?
+  revenueGroupName String?
+  vatRateSnapshot  Decimal
+  allergensSummary String?
 
-  order             Order          @relation(fields: [orderId], references: [id])
-  variant           ProductVariant @relation(fields: [variantId], references: [id])
+  order            Order          @relation(fields: [orderId], references: [id])
+  variant          ProductVariant @relation(fields: [variantId], references: [id])
 
-  // 🔽 NIEUW: link terug naar stockmovements
-  stockMovements    StockMovement[]
+  stockMovements   StockMovement[]
 
   @@index([orderId])
   @@index([variantId])
@@ -258,16 +280,16 @@ model OrderItem {
 }
 
 model Payment {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   orderId     String
   method      String
-  amount      Float
-  createdAt   DateTime @default(now())
+  amount      Decimal
+  createdAt   DateTime  @default(now())
 
   employeeId  String?
   employee    Employee? @relation(fields: [employeeId], references: [id])
 
-  order       Order    @relation(fields: [orderId], references: [id])
+  order       Order     @relation(fields: [orderId], references: [id])
 
   @@index([orderId])
   @@index([createdAt])
@@ -281,43 +303,46 @@ model Payment {
 //
 
 model MenuCard {
-  id         String   @id @default(cuid())
-  tenantId   String
-  name       String
-  type       String?      // Lunch, Diner, Snacks, Kiosk
-  theme      String?
-  isPrimary  Boolean @default(false)
+  id          String    @id @default(cuid())
+  tenantId    String
+  name        String
+  type        String?      // Lunch, Diner, Snacks, Kiosk
+  theme       String?
+  isPrimary   Boolean  @default(false)
 
-  activeFrom DateTime?
+  activeFrom  DateTime?
   activeUntil DateTime?
 
-  startTime  String?
-  endTime    String?
-  daysOfWeek String?      // MON,TUE,...
+  startTime   String?
+  endTime     String?
+  daysOfWeek  String?      // MON,TUE,...
 
-  items      MenuItem[]
+  items       MenuItem[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([tenantId])
 }
 
 model MenuItem {
-  id           String  @id @default(cuid())
-  menuCardId   String
-  productId    String
-  variantId    String?
-  sortOrder    Int      @default(0)
-  isHidden     Boolean  @default(false)
+  id               String          @id @default(cuid())
+  menuCardId       String
+  productId        String
+  variantId        String?
+  sortOrder        Int             @default(0)
+  isHidden         Boolean         @default(false)
 
-  visibleOnPos      Boolean @default(true)
-  visibleOnKiosk    Boolean @default(true)
-  visibleOnWeb      Boolean @default(true)
-  visibleOnDelivery Boolean @default(true)
+  visibleOnPos      Boolean        @default(true)
+  visibleOnKiosk    Boolean        @default(true)
+  visibleOnWeb      Boolean        @default(true)
+  visibleOnDelivery Boolean        @default(true)
 
-  priceOverride     Float?
+  priceOverride     Decimal?
 
-  menuCard       MenuCard @relation(fields: [menuCardId], references: [id])
-  product        Product  @relation(fields: [productId], references: [id])
-  variant        ProductVariant? @relation(fields: [variantId], references: [id])
+  menuCard          MenuCard       @relation(fields: [menuCardId], references: [id])
+  product           Product        @relation(fields: [productId], references: [id])
+  variant           ProductVariant? @relation(fields: [variantId], references: [id])
 
   @@index([menuCardId])
   @@index([productId])
@@ -346,30 +371,30 @@ model ModifierGroup {
 }
 
 model ModifierOption {
-  id         String   @id @default(cuid())
+  id         String         @id @default(cuid())
   groupId    String
   name       String
-  priceDelta Float    @default(0)
+  priceDelta Decimal        @default(0)
   icon       String?
   color      String?
-  sortOrder  Int      @default(0)
+  sortOrder  Int            @default(0)
 
-  group      ModifierGroup @relation(fields: [groupId], references: [id])
+  group      ModifierGroup  @relation(fields: [groupId], references: [id])
 }
 
 model ProductModifierGroup {
-  id            String @id @default(cuid())
-  productId     String
-  groupId       String
-  sortOrder     Int      @default(0)
-  required      Boolean  @default(false)
+  id               String   @id @default(cuid())
+  productId        String
+  groupId          String
+  sortOrder        Int      @default(0)
+  required         Boolean  @default(false)
 
   visibleOnPos      Boolean @default(true)
   visibleOnKiosk    Boolean @default(true)
   visibleOnWeb      Boolean @default(true)
 
-  product       Product        @relation(fields: [productId], references: [id])
-  group         ModifierGroup  @relation(fields: [groupId], references: [id])
+  product          Product        @relation(fields: [productId], references: [id])
+  group            ModifierGroup  @relation(fields: [groupId], references: [id])
 
   @@index([productId])
   @@index([groupId])
@@ -382,9 +407,9 @@ model ProductModifierGroup {
 //
 
 model PriceRule {
-  id           String   @id @default(cuid())
-  tenantId     String
-  name         String
+  id              String    @id @default(cuid())
+  tenantId        String
+  name            String
 
   productId       String?
   variantId       String?
@@ -392,9 +417,9 @@ model PriceRule {
   revenueGroupId  String?
   menuCardId      String?
 
-  amountOff       Float?
-  percentOff      Float?
-  newPrice        Float?
+  amountOff       Decimal?
+  percentOff      Decimal?
+  newPrice        Decimal?
 
   startTime       String?
   endTime         String?
@@ -402,16 +427,17 @@ model PriceRule {
   dateFrom        DateTime?
   dateUntil       DateTime?
 
-  appliesPos      Boolean @default(true)
-  appliesKiosk    Boolean @default(true)
-  appliesWeb      Boolean @default(true)
+  appliesPos      Boolean   @default(true)
+  appliesKiosk    Boolean   @default(true)
+  appliesWeb      Boolean   @default(true)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([productId])
   @@index([variantId])
   @@index([categoryId])
   @@index([revenueGroupId])
+  @@index([menuCardId])
 }
