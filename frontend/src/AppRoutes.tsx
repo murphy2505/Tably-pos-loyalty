@@ -8,8 +8,8 @@ import MainShell from "./layouts/MainShell";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 
 // POS
-import PosLayout from "./components/pos/PosLayout";   // ⬅️ NIEUW: POS layout
-import PosPage from "./pages/pos/PosPage";        // kassascherm
+import PosLayout from "./components/pos/PosLayout";   // POS layout
+import PosPage from "./pages/pos/PosPage";            // kassascherm
 import PosProductsPage from "./pages/pos/PosProductsPage";
 import PosCategoriesPage from "./pages/pos/PosCategoriesPage";
 import PosStockPage from "./pages/pos/PosStockPage";
@@ -19,6 +19,11 @@ import PosGiftcardsPage from "./pages/pos/PosGiftcardsPage";
 import PosPlanningPage from "./pages/pos/PosPlanningPage";
 import PosTablesPage from "./pages/pos/PosTablesPage";
 import KdsPage from "./pages/kds/KdsPage";
+
+// 🔹 NIEUW: omzetgroepen & (optioneel) menukaarten
+import PosRevenueGroupsPage from "./pages/pos/PosRevenueGroupsPage";
+// Als je menukaarten al hebt aangemaakt, deze import erbij:
+// import PosMenusPage from "./pages/pos/PosMenusPage";
 
 // Loyalty
 import LoyaltyPage from "./pages/loyalty/LoyaltyPage";
@@ -46,6 +51,9 @@ export function AppRoutes() {
           {/* POS beheer / submodules */}
           <Route path="products" element={<PosProductsPage />} />
           <Route path="categories" element={<PosCategoriesPage />} />
+          <Route path="revenue-groups" element={<PosRevenueGroupsPage />} />
+          {/* Menukaarten route alleen als PosMenusPage bestaat */}
+          {/* <Route path="menus" element={<PosMenusPage />} /> */}
           <Route path="stock" element={<PosStockPage />} />
           <Route path="reports" element={<PosReportsPage />} />
           <Route path="customers" element={<PosCustomersPage />} />

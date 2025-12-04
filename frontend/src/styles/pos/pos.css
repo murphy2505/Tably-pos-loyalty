@@ -898,5 +898,67 @@
   flex: 0 0 auto;
 }
 
+/* =========================================
+   ADMIN LAYOUT (Producten, Categorieën, etc.)
+   Lichte, kassa-achtige stijl
+   ========================================= */
+
+.pos-page-admin {
+  color: #91b4fd;
+}
+
+.pos-page-admin .mint-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.pos-page-admin input,
+.pos-page-admin select,
+.pos-page-admin textarea {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #111827;
+}
+
+.pos-page-admin input::placeholder,
+.pos-page-admin textarea::placeholder {
+  color: #9ca3af;
+}
+
+.pos-page-admin .pos-product-row {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  color: #111827;
+}
+
+.pos-page-admin .pos-category-row {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+.pos-page-admin .pos-right.pos-order {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  color: #121d33;
+}
+
+.pos-page-admin .pos-order-header,
+.pos-page-admin .pos-order-title,
+.pos-page-admin .pos-order-line-name {
+  color: #111827;
+}
+
+.pos-page-admin .pos-order-status {
+  background: #e5f3ff;
+  color: #172442;
+}
+
 /* Zorg dat hoofdcontainer geen dubbele definities conflicteren */
 /* (De bovenstaande definitie van .pos-shell/ .pos-main-area blijft bestaan, maar PosLayout gebruikt .pos-layout) */

@@ -13,6 +13,7 @@ import variantsRoutes from "./routes/variants";
 import stockRoutes from "./routes/stock";
 import ordersRoutes from "./routes/orders";
 import customersRouter from "./routes/customersRouter";
+import revenueGroupsRoutes from "./routes/revenueGroups";
 
 const app = express();
 
@@ -47,9 +48,13 @@ app.use("/pos/variants", authMiddleware, variantsRoutes);
 // Voorraad
 app.use("/pos/core/stock", authMiddleware, stockRoutes);
 
+// Omzetgroepen
+app.use("/pos/core/revenue-groups", authMiddleware, revenueGroupsRoutes);
+
 /**
  * POS-klanten endpoint (single source of truth in loyalty-service)
  */
 app.use("/pos/customers", authMiddleware, customersRouter);
 
 export default app;
+
