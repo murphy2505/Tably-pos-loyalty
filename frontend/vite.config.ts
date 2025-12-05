@@ -1,12 +1,17 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
   server: {
-    host: "0.0.0.0",   // ← maakt 5173 zichtbaar op je netwerk (iPad werkt hiermee)
+    host: "0.0.0.0", // iPad / netwerk
     port: 5173,
-
     proxy: {
       // ➜ POS backend op 4002
       "/pos": {

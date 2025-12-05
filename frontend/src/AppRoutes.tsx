@@ -19,11 +19,12 @@ import PosGiftcardsPage from "./pages/pos/PosGiftcardsPage";
 import PosPlanningPage from "./pages/pos/PosPlanningPage";
 import PosTablesPage from "./pages/pos/PosTablesPage";
 import KdsPage from "./pages/kds/KdsPage";
-
-// 🔹 NIEUW: omzetgroepen & (optioneel) menukaarten
 import PosRevenueGroupsPage from "./pages/pos/PosRevenueGroupsPage";
-// Als je menukaarten al hebt aangemaakt, deze import erbij:
-// import PosMenusPage from "./pages/pos/PosMenusPage";
+import ModifiersPage from "./pages/core/ModifiersPage";
+
+// Menukaarten (beheer UI, draait ook onder POS-shell)
+import MenusPage from "./pages/core/menus/MenusPage";
+import MenuDetailPage from "./pages/core/menus/MenuDetailPage";
 
 // Loyalty
 import LoyaltyPage from "./pages/loyalty/LoyaltyPage";
@@ -52,8 +53,6 @@ export function AppRoutes() {
           <Route path="products" element={<PosProductsPage />} />
           <Route path="categories" element={<PosCategoriesPage />} />
           <Route path="revenue-groups" element={<PosRevenueGroupsPage />} />
-          {/* Menukaarten route alleen als PosMenusPage bestaat */}
-          {/* <Route path="menus" element={<PosMenusPage />} /> */}
           <Route path="stock" element={<PosStockPage />} />
           <Route path="reports" element={<PosReportsPage />} />
           <Route path="customers" element={<PosCustomersPage />} />
@@ -61,6 +60,11 @@ export function AppRoutes() {
           <Route path="planning" element={<PosPlanningPage />} />
           <Route path="tables" element={<PosTablesPage />} />
           <Route path="kds" element={<KdsPage />} />
+          <Route path="modifiers" element={<ModifiersPage />} />
+
+          {/* Menukaarten beheer (lijst + detail) */}
+          <Route path="menus" element={<MenusPage />} />
+          <Route path="menus/:id" element={<MenuDetailPage />} />
         </Route>
 
         {/* Loyalty */}
