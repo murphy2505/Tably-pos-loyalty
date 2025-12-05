@@ -1,3 +1,4 @@
+// src/pages/core/ModifiersPage.tsx
 import React, { useEffect, useState } from "react";
 import {
   listModifierGroups,
@@ -13,6 +14,7 @@ export default function ModifiersPage() {
   const [groups, setGroups] = useState<any[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [groupForm, setGroupForm] = useState({
     name: "",
@@ -21,12 +23,24 @@ export default function ModifiersPage() {
 
   const load = async () => {
     setLoading(true);
-    const result = await listModifierGroups();
-    setGroups(result);
-    if (result.length > 0 && !selectedGroup) {
-      setSelectedGroup(result[0]);
+    setError(null);
+    try {
+      const result = await listModifierGroups();
+      setGroups(result);
+      if (result.length > 0) {
+        setSelectedGroup(result[0]);
+      } else {
+        setSelectedGroup(null);
+      }
+    } catch (e: any) {
+      console.error("Error loading modifier groups", e);
+      setError(
+        e?.response?.data?.error ||
+          "Kon modifiergroepen niet laden. Controleer of de POS-service draait en je bent ingelogd."
+      );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -35,56 +49,94 @@ export default function ModifiersPage() {
 
   const handleCreateGroup = async () => {
     if (!groupForm.name.trim()) return;
-    await createModifierGroup(groupForm);
-    setGroupForm({ name: "", sortOrder: 0 });
-    load();
+    try {
+      await createModifierGroup(groupForm);
+      setGroupForm({ name: "", sortOrder: 0 });
+      await load();
+    } catch (e) {
+      console.error("Error createModifierGroup", e);
+    }
   };
 
-  const handleSelectGroup = async (g: any) => {
+  const handleSelectGroup = (g: any) => {
     setSelectedGroup(g);
   };
 
   const handleUpdateGroup = async (field: string, value: any) => {
     if (!selectedGroup) return;
-    await updateModifierGroup(selectedGroup.id, { [field]: value });
-    load();
+    try {
+      await updateModifierGroup(selectedGroup.id, { [field]: value });
+      await load();
+    } catch (e) {
+      console.error("Error updateModifierGroup", e);
+    }
   };
 
   const handleDeleteGroup = async (id: string) => {
     if (!window.confirm("Weet je zeker dat je deze modifiergroep wilt verwijderen?")) return;
-    await deleteModifierGroup(id);
-    setSelectedGroup(null);
-    load();
+    try {
+      await deleteModifierGroup(id);
+      setSelectedGroup(null);
+      await load();
+    } catch (e) {
+      console.error("Error deleteModifierGroup", e);
+    }
   };
 
   // ------- OPTIONS -------
   const handleCreateOption = async () => {
     if (!selectedGroup) return;
-
-    await createModifierOption(selectedGroup.id, {
-      name: "Nieuwe optie",
-      priceDelta: "0",
-      sortOrder: (selectedGroup.options?.length || 0) + 1,
-    });
-    load();
+    try {
+      await createModifierOption(selectedGroup.id, {
+        name: "Nieuwe optie",
+        priceDelta: "0",
+        sortOrder: (selectedGroup.options?.length || 0) + 1,
+      });
+      await load();
+    } catch (e) {
+      console.error("Error createModifierOption", e);
+    }
   };
 
   const handleUpdateOption = async (optId: string, field: string, value: any) => {
-    await updateModifierOption(optId, { [field]: value });
-    load();
+    try {
+      await updateModifierOption(optId, { [field]: value });
+      await load();
+    } catch (e) {
+      console.error("Error updateModifierOption", e);
+    }
   };
 
   const handleDeleteOption = async (optId: string) => {
     if (!window.confirm("Optie verwijderen?")) return;
-    await deleteModifierOption(optId);
-    load();
+    try {
+      await deleteModifierOption(optId);
+      await load();
+    } catch (e) {
+      console.error("Error deleteModifierOption", e);
+    }
   };
 
-  if (loading) return <div className="p-4">Laden...</div>;
+  if (loading) {
+    return <div className="p-4">Laden...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <div className="mb-2 text-red-400">{error}</div>
+        <button
+          onClick={load}
+          className="bg-mint-500 hover:bg-mint-600 text-black px-3 py-2 rounded-lg"
+        >
+          Opnieuw proberen
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full gap-4 p-4">
-
       {/* ============= LEFT: GROUPS LIST ============= */}
       <div className="w-64 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
         <h2 className="text-lg font-bold mb-3">Modifiergroepen</h2>
@@ -208,7 +260,11 @@ export default function ModifiersPage() {
                         className="bg-white/10 p-2 rounded"
                         value={opt.sortOrder}
                         onChange={(e) =>
-                          handleUpdateOption(opt.id, "sortOrder", Number(e.target.value))
+                          handleUpdateOption(
+                            opt.id,
+                            "sortOrder",
+                            Number(e.target.value)
+                          )
                         }
                       />
                     </label>

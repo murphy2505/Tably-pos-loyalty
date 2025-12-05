@@ -20,7 +20,7 @@ export interface ModifierGroupInput {
 export interface ModifierOptionInput {
   name: string;
   shortLabel?: string | null;
-  priceDelta?: string; // Decimal → string
+  priceDelta?: string; // Decimal als string
   isDefault?: boolean;
   isActive?: boolean;
   sortOrder?: number;
@@ -103,7 +103,7 @@ export async function deleteModifierGroup(
   tenantId: string,
   id: string
 ): Promise<void> {
-  // cascade: eerst opties weggooien
+  // eerst opties weggooien
   await prisma.modifierOption.deleteMany({
     where: { groupId: id, tenantId },
   });
@@ -121,7 +121,6 @@ export async function createModifierOption(
   groupId: string,
   data: ModifierOptionInput
 ): Promise<ModifierOption> {
-  // optioneel: check of group wel bij tenant hoort
   const group = await prisma.modifierGroup.findFirst({
     where: { id: groupId, tenantId },
   });

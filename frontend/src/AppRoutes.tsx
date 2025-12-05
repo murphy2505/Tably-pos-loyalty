@@ -60,6 +60,8 @@ export function AppRoutes() {
           <Route path="planning" element={<PosPlanningPage />} />
           <Route path="tables" element={<PosTablesPage />} />
           <Route path="kds" element={<KdsPage />} />
+
+          {/* 🔥 Modifiers UI onder POS */}
           <Route path="modifiers" element={<ModifiersPage />} />
 
           {/* Menukaarten beheer (lijst + detail) */}

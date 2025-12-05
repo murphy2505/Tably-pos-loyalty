@@ -17,7 +17,9 @@ import customersRouter from "./routes/customersRouter";
 import revenueGroupsRoutes from "./routes/revenueGroups";
 
 // Menukaarten
+// Update the import path if the file is named differently, e.g. menusRouter.ts or MenusRouter.ts
 import menusRouter from "./routes/menus";
+// Update the import path if the file is named differently, e.g. menuitems.ts or menuItemsRouter.ts
 import menuItemsRouter from "./routes/menuItems";
 
 // Modifiers (sauzen / extra's)
