@@ -29,55 +29,55 @@ export async function apiListMenuItemsPOS(menuId: string) {
 
 // CORE (dashboard / beheer)
 export async function apiListMenus() {
-  const res = await api.get("/pos/core/menus");
+  const res = await api.get("/pos-api/menus");
   return res.data;
 }
 
 export async function apiGetMenu(id: string) {
-  const res = await api.get(`/pos/core/menus/${id}`);
+  const res = await api.get(`/pos-api/menus/${id}`);
   return res.data;
 }
 
 export async function apiCreateMenu(data: any) {
-  const res = await api.post("/pos/core/menus", data);
+  const res = await api.post(`/pos-api/core/menus`, data);
   return res.data;
 }
 
 export async function apiUpdateMenu(id: string, data: any) {
-  const res = await api.put(`/pos/core/menus/${id}`, data);
+  const res = await api.put(`/pos-api/core/menus/${id}`, data);
   return res.data;
 }
 
 export async function apiDeleteMenu(id: string) {
-  const res = await api.delete(`/pos/core/menus/${id}`);
+  const res = await api.delete(`/pos-api/core/menus/${id}`);
   return res.data;
 }
 
 // Menu-items beheer
 export async function apiListMenuItems(menuId: string) {
-  const res = await api.get("/pos/core/menu-items", {
+  const res = await api.get("/pos-api/core/menu-items", {
     params: { menuId },
   });
   return res.data;
 }
 
 export async function apiCreateMenuItem(data: any) {
-  const res = await api.post("/pos/core/menu-items", data);
+  const res = await api.post(`/pos-api/core/menu-items`, data);
   return res.data;
 }
 
 export async function apiUpdateMenuItem(id: string, data: any) {
-  const res = await api.put(`/pos/core/menu-items/${id}`, data);
+  const res = await api.put(`/pos-api/core/menu-items/${id}`, data);
   return res.data;
 }
 
 export async function apiDeleteMenuItem(id: string) {
-  const res = await api.delete(`/pos/core/menu-items/${id}`);
+  const res = await api.delete(`/pos-api/core/menu-items/${id}`);
   return res.data;
 }
 
 export async function apiReorderMenuItems(menuId: string, orderedIds: string[]) {
-  const res = await api.post("/pos/core/menu-items/reorder", {
+  const res = await api.post(`/pos-api/core/menu-items/reorder`, {
     menuId,
     orderedIds,
   });
@@ -91,43 +91,43 @@ export async function apiReorderMenuItems(menuId: string, orderedIds: string[]) 
 //
 
 export async function listModifierGroups() {
-  const res = await api.get(`/pos/core/modifiers/groups`);
+  const res = await api.get(`/pos-api/core/modifiers/groups`);
   return res.data;
 }
 
 export async function getModifierGroup(id: string) {
-  const res = await api.get(`/pos/core/modifiers/groups/${id}`);
+  const res = await api.get(`/pos-api/core/modifiers/groups/${id}`);
   return res.data;
 }
 
 export async function createModifierGroup(data: any) {
-  const res = await api.post(`/pos/core/modifiers/groups`, data);
+  const res = await api.post(`/pos-api/core/modifiers/groups`, data);
   return res.data;
 }
 
 export async function updateModifierGroup(id: string, data: any) {
-  const res = await api.put(`/pos/core/modifiers/groups/${id}`, data);
+  const res = await api.put(`/pos-api/core/modifiers/groups/${id}`, data);
   return res.data;
 }
 
 export async function deleteModifierGroup(id: string) {
-  const res = await api.delete(`/pos/core/modifiers/groups/${id}`);
+  const res = await api.delete(`/pos-api/core/modifiers/groups/${id}`);
   return res.data;
 }
 
 // ---- Options ----
 
 export async function createModifierOption(groupId: string, data: any) {
-  const res = await api.post(`/pos/core/modifiers/groups/${groupId}/options`, data);
+  const res = await api.post(`/pos-api/core/modifiers/groups/${groupId}/options`, data);
   return res.data;
 }
 
 export async function updateModifierOption(id: string, data: any) {
-  const res = await api.put(`/pos/core/modifiers/options/${id}`, data);
+  const res = await api.put(`/pos-api/core/modifiers/options/${id}`, data);
   return res.data;
 }
 
 export async function deleteModifierOption(id: string) {
-  const res = await api.delete(`/pos/core/modifiers/options/${id}`);
+  const res = await api.delete(`/pos-api/core/modifiers/options/${id}`);
   return res.data;
 }

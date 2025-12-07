@@ -8,6 +8,11 @@ export type RevenueGroup = {
 
 const BASE_URL = "/pos/core/revenue-groups";
 
+const headers = {
+  "Content-Type": "application/json",
+  "x-tenant-id": "demo",
+};
+
 async function handleRes(res: Response) {
   if (!res.ok) {
     let msg = `Request failed (${res.status})`;
@@ -34,7 +39,7 @@ export async function createRevenueGroup(payload: {
 }): Promise<RevenueGroup> {
   const res = await fetch(BASE_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
   return handleRes(res);
@@ -46,7 +51,7 @@ export async function updateRevenueGroup(
 ): Promise<RevenueGroup> {
   const res = await fetch(`${BASE_URL}/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
   return handleRes(res);
@@ -57,4 +62,17 @@ export async function deleteRevenueGroup(id: string): Promise<void> {
     method: "DELETE",
   });
   await handleRes(res);
+}
+
+export interface PosRevenueGroup {
+  id: string;
+  name: string;
+  color?: string | null;
+}
+
+// TODO: vervang dit pad zodra het backend-endpoint beschikbaar is.
+export async function fetchRevenueGroups(): Promise<RevenueGroup[]> {
+  const res = await fetch("/pos/core/revenue-groups", { headers });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }

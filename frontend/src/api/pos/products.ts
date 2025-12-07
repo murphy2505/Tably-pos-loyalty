@@ -1,97 +1,91 @@
 // frontend/src/api/pos/products.ts
 
-export type ProductVariant = {
-  id?: string;
+export interface PosProductVariant {
+  id: string;
   name: string;
   price: number;
-  costPrice?: number | null;
-  sku?: string | null;
-  pluCode?: string | null;
-  active: boolean;
-};
+  active?: boolean;
+}
 
-export type Product = {
+export interface PosProduct {
   id: string;
-  tenantId: string;
-  categoryId: string;
-  revenueGroupId?: string | null;
   name: string;
-  shortLabel?: string | null;
-  description?: string | null;
-  vatRate: number;
-  tileColor?: string | null;
-  tileIcon?: string | null;
-  imageUrl?: string | null;
-  active: boolean;
-  variants: ProductVariant[];
+  categoryId?: string | null;
+  revenueGroupId?: string | null;
+  isActive?: boolean;
+  price?: number;
+  variants?: PosProductVariant[];
+}
+
+export interface CreateProductInput {
+  name: string;
+  price: number;
+  categoryId?: string | null;
+  revenueGroupId?: string | null;
+  isActive?: boolean;
+}
+
+export interface UpdateProductInput {
+  name?: string;
+  price?: number;
+  categoryId?: string | null;
+  revenueGroupId?: string | null;
+  isActive?: boolean;
+}
+
+const headers = {
+  "Content-Type": "application/json",
+  "x-tenant-id": "demo",
 };
 
-const TENANT_ID = "demo-tenant";
-const DEV_TOKEN = "DUMMY_DEV_TOKEN";
-
-async function parseJson(res: Response) {
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`HTTP ${res.status} – ${text || res.statusText}`);
-  }
+// Lijst producten
+export async function fetchProducts(): Promise<PosProduct[]> {
+  const res = await fetch("/pos/core/products", { headers });
+  if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
-// 🔹 Overzicht producten
-export async function getProducts(): Promise<Product[]> {
-  const res = await fetch("/pos/products", {
-    headers: {
-      "Content-Type": "application/json",
-      "x-tenant-id": TENANT_ID,
-      Authorization: `Bearer ${DEV_TOKEN}`,
-    },
-  });
-  return parseJson(res);
+// Detail product (fallback als backend geen detail-endpoint heeft)
+export async function fetchProductById(id: string): Promise<PosProduct | null> {
+  // Probeer een hypothetisch detail-pad; als niet aanwezig → fallback
+  const detail = await fetch(`/pos/core/products/${encodeURIComponent(id)}`, { headers });
+  if (detail.ok) return detail.json();
+
+  // Fallback: filter uit lijst
+  const list = await fetchProducts();
+  return list.find((p) => p.id === id) ?? null;
 }
 
-// 🔹 Nieuw product (incl. varianten)
-export async function createProduct(payload: any): Promise<Product> {
-  const res = await fetch("/pos/products", {
+// Aanmaken product (optioneel voor volgende stap)
+export async function createProduct(input: CreateProductInput): Promise<PosProduct> {
+  const res = await fetch("/pos/core/products", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-tenant-id": TENANT_ID,
-      Authorization: `Bearer ${DEV_TOKEN}`,
-    },
-    body: JSON.stringify(payload),
+    headers,
+    body: JSON.stringify(input),
   });
-  return parseJson(res);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
-// 🔹 Product bijwerken
-export async function updateProduct(id: string, payload: any): Promise<Product> {
-  const res = await fetch(`/pos/products/${id}`, {
+// Bijwerken product
+export async function updateProduct(id: string, input: UpdateProductInput): Promise<PosProduct> {
+  const res = await fetch(`/pos/core/products/${encodeURIComponent(id)}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "x-tenant-id": TENANT_ID,
-      Authorization: `Bearer ${DEV_TOKEN}`,
-    },
-    body: JSON.stringify(payload),
+    headers,
+    body: JSON.stringify(input),
   });
-  return parseJson(res);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
 // 🔹 Product verwijderen
 export async function deleteProduct(id: string): Promise<void> {
-  const res = await fetch(`/pos/products/${id}`, {
+  const res = await fetch(`/pos/core/products/${encodeURIComponent(id)}`, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      "x-tenant-id": TENANT_ID,
-      Authorization: `Bearer ${DEV_TOKEN}`,
-    },
+    headers,
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`HTTP ${res.status} – ${text || res.statusText}`);
-  }
+  if (!res.ok) throw new Error(await res.text());
 }
 
 // =====================================================================
@@ -101,11 +95,7 @@ export async function deleteProduct(id: string): Promise<void> {
 export async function createVariant(payload: any): Promise<ProductVariant> {
   const res = await fetch("/pos/core/variants", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-tenant-id": TENANT_ID,
-      Authorization: `Bearer ${DEV_TOKEN}`,
-    },
+    headers,
     body: JSON.stringify(payload),
   });
   return parseJson(res);
@@ -117,11 +107,7 @@ export async function updateVariant(
 ): Promise<ProductVariant> {
   const res = await fetch(`/pos/core/variants/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "x-tenant-id": TENANT_ID,
-      Authorization: `Bearer ${DEV_TOKEN}`,
-    },
+    headers,
     body: JSON.stringify(payload),
   });
   return parseJson(res);
@@ -130,11 +116,7 @@ export async function updateVariant(
 export async function deleteVariant(id: string): Promise<void> {
   const res = await fetch(`/pos/core/variants/${id}`, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      "x-tenant-id": TENANT_ID,
-      Authorization: `Bearer ${DEV_TOKEN}`,
-    },
+    headers,
   });
 
   if (!res.ok) {

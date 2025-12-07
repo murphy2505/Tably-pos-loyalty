@@ -1,477 +1,319 @@
-// src/pages/pos/PosPage.tsx
-import { useEffect, useState } from "react";
-import "../../styles/pos/pos.css";
+// frontend/src/pages/pos/PosPage.tsx
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import type {
-  PosProduct,
-  PosOrderLine,
-  PosOrderTotals,
-} from "../../types/pos";
-
-import {
-  fetchPosProducts,
-  calculateTotals,
-} from "../../services/posService";
-
-import {
-  createPosOrder,
-  type PaymentMethod,
-} from "../../services/ordersService";
-
-import {
-  createKdsTicket,
-  type KdsStatus,
-} from "../../services/kdsService";
-
-// --------------------------------------------------------
-// Config & types
-// --------------------------------------------------------
+type PosProduct = {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  popular?: boolean;
+  bestSeller?: boolean;
+  isNew?: boolean;
+};
 
 const categories = ["Populair", "Friet", "Snacks", "Menu's", "Drinken"];
 
-type ParkedOrder = {
-  id: string;
-  label: string;
-  lines: PosOrderLine[];
-  totals: PosOrderTotals;
-};
+// TODO: vervang dit door je echte producten uit backend / context
+const demoProducts: PosProduct[] = [
+  { id: "1", name: "Friet klein", price: 2.9, category: "Friet", popular: true },
+  { id: "2", name: "Friet groot", price: 3.8, category: "Friet", bestSeller: true },
+  { id: "3", name: "Frikandel", price: 2.5, category: "Snacks" },
+  { id: "4", name: "Frikandel speciaal", price: 3.1, category: "Snacks" },
+  { id: "5", name: "Kroket", price: 2.7, category: "Snacks", isNew: true },
+  { id: "6", name: "Bamischijf", price: 2.7, category: "Snacks" },
+  { id: "7", name: "Menu saté", price: 11.5, category: "Menu's", isNew: true },
+  { id: "8", name: "Cola 33cl", price: 2.6, category: "Drinken" },
+  { id: "9", name: "Fanta 33cl", price: 2.6, category: "Drinken" },
+  { id: "10", name: "Milkshake aardbei", price: 4.2, category: "Drinken" },
+];
 
-// --------------------------------------------------------
-// Component
-// --------------------------------------------------------
+type PaymentMethod = "cash" | "card" | "ideal";
 
 export default function PosPage() {
-  // Producten & order
-  const [products, setProducts] = useState<PosProduct[]>([]);
-  const [orderLines, setOrderLines] = useState<PosOrderLine[]>([]);
-  const [totals, setTotals] = useState<PosOrderTotals>({
-    subtotal: 0,
-    discount: 0,
-    total: 0,
-  });
+  const navigate = useNavigate();
+  const [activeCategory, setActiveCategory] = useState<string>("Populair");
 
-  // UI
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState("Populair");
+  // dummy order-totaal
+  const [orderTotal] = useState<number>(0);
 
-  // Betaling
-  const [isPaying, setIsPaying] = useState(false);
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod | null>(null);
+  // betaalscherm state
+  const [isPayOpen, setIsPayOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
 
-  // Parkeren
-  const [parkedOrders, setParkedOrders] = useState<ParkedOrder[]>([]);
-  const [currentTicketNumber, setCurrentTicketNumber] = useState(123);
+  const products = demoProducts;
 
-  // --------------------------------------------------------
-  // Producten laden
-  // --------------------------------------------------------
+  // Populair-tab = alle producten met één van de badges
+  const visibleProducts = useMemo(
+    () =>
+      products.filter((p) =>
+        activeCategory === "Populair"
+          ? p.popular || p.bestSeller || p.isNew
+          : p.category === activeCategory
+      ),
+    [products, activeCategory]
+  );
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchPosProducts();
-        setProducts(data);
-      } catch {
-        setError("Kon producten niet laden");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const handleAddProduct = (product: PosProduct) => {
+    // TODO: hier je bon-/order-logica
+    console.log("Toevoegen:", product);
+  };
 
-  // --------------------------------------------------------
-  // Afgeleide data
-  // --------------------------------------------------------
+  const handleOpenPay = () => {
+    setIsPayOpen(true);
+  };
 
-  const filteredProducts =
-    activeCategory === "Populair"
-      ? products
-      : products.filter((p) => p.category === activeCategory);
-
-  // --------------------------------------------------------
-  // Handlers – orderregels
-  // --------------------------------------------------------
-
-  function onProductClick(product: PosProduct) {
-    setOrderLines((prev) => {
-      const existing = prev.find((l) => l.productId === product.id);
-      let next: PosOrderLine[];
-
-      if (existing) {
-        next = prev.map((l) =>
-          l.productId === product.id ? { ...l, qty: l.qty + 1 } : l
-        );
-      } else {
-        next = [
-          ...prev,
-          {
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            qty: 1,
-          },
-        ];
-      }
-
-      setTotals(calculateTotals(next));
-      return next;
-    });
-  }
-
-  function increaseQty(productId: number) {
-    setOrderLines((prev) => {
-      const next = prev.map((l) =>
-        l.productId === productId ? { ...l, qty: l.qty + 1 } : l
-      );
-      setTotals(calculateTotals(next));
-      return next;
-    });
-  }
-
-  function decreaseQty(productId: number) {
-    setOrderLines((prev) => {
-      const next = prev
-        .map((l) =>
-          l.productId === productId ? { ...l, qty: l.qty - 1 } : l
-        )
-        .filter((l) => l.qty > 0);
-
-      setTotals(calculateTotals(next));
-      return next;
-    });
-  }
-
-  function removeLine(productId: number) {
-    setOrderLines((prev) => {
-      const next = prev.filter((l) => l.productId !== productId);
-      setTotals(calculateTotals(next));
-      return next;
-    });
-  }
-
-  function handleClearOrder() {
-    setOrderLines([]);
-    setTotals({ subtotal: 0, discount: 0, total: 0 });
-  }
-
-  // --------------------------------------------------------
-  // Parkeren
-  // --------------------------------------------------------
-
-  function handleParkOrder() {
-    if (orderLines.length === 0) return;
-
-    const id = `T${currentTicketNumber}`;
-
-    const parked: ParkedOrder = {
-      id,
-      label: `Bon ${currentTicketNumber}`,
-      lines: orderLines,
-      totals,
-    };
-
-    setParkedOrders((prev) => [...prev, parked]);
-    setCurrentTicketNumber((n) => n + 1);
-    handleClearOrder();
-  }
-
-  function handleRestoreParkedOrder(orderId: string) {
-    setParkedOrders((prev) => {
-      const found = prev.find((p) => p.id === orderId);
-      if (!found) return prev;
-
-      setOrderLines(found.lines);
-      setTotals(found.totals);
-
-      const parsed = parseInt(orderId.replace("T", ""), 10);
-      if (!Number.isNaN(parsed)) setCurrentTicketNumber(parsed);
-
-      return prev.filter((p) => p.id !== orderId);
-    });
-  }
-
-  // --------------------------------------------------------
-  // Betalen
-  // --------------------------------------------------------
-
-  async function handleConfirmPayment() {
+  const handleConfirmPay = () => {
     if (!paymentMethod) return;
+    // TODO: hier SumUp / betaal-flow starten
+    console.log("Bevestig betaling:", paymentMethod);
+    setIsPayOpen(false);
+    setPaymentMethod(null);
+  };
 
-    try {
-      const result = await createPosOrder({
-        lines: orderLines,
-        totals,
-        paymentMethod,
-        source: "counter",
-      });
+  const handleAbortTicket = () => {
+    // TODO: dialoog "Weet je zeker dat je deze bon wilt afbreken?"
+    console.log("Bon afbreken (confirm dialoog komt later)");
+  };
 
-      await createKdsTicket({
-        id: result.orderId,
-        items: orderLines.map((l) => ({
-          id: `${result.orderId}-${l.productId}`,
-          productId: String(l.productId),
-          name: l.name,
-          quantity: l.qty,
-        })),
-        status: "open" as KdsStatus,
-      });
-    } catch (e) {
-      console.error("Failed to process order", e);
-    } finally {
-      setIsPaying(false);
-      setPaymentMethod(null);
-      handleClearOrder();
-    }
-  }
-
-  // --------------------------------------------------------
-  // UI
-  // --------------------------------------------------------
+  const subtotal = orderTotal;
+  const discount = 0;
+  const total = subtotal - discount;
 
   return (
-    <div className="pos-page mint-glass-card">
-      {/* MAIN GRID (producten links / bon rechts) */}
-      <div className="pos-main">
-        {/* LINKERKANT – producten */}
-        <section className="pos-left">
-          <div className="pos-category-bar">
-            {categories.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={
-                  "pos-category-button" +
-                  (activeCategory === c ? " is-active" : "")
-                }
-                onClick={() => setActiveCategory(c)}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+    <>
+      {/* LINKERKANT – productgrid */}
+      <div className="pos-products-area">
+        <div className="pos-category-tabs">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              className={
+                "pos-category-tab" +
+                (cat === activeCategory ? " pos-category-tab--active" : "")
+              }
+              onClick={() => setActiveCategory(cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
 
-          <div className="pos-products">
-            <div className="pos-products-grid">
-              {loading && (
-                <div className="pos-loading">Producten laden...</div>
-              )}
-              {error && <div className="pos-error">{error}</div>}
+        <div className="pos-products-grid">
+          {visibleProducts.map((p) => (
+            <button
+              key={p.id}
+              className="pos-product-tile"
+              onClick={() => handleAddProduct(p)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                // TODO: long-press / right-click voor details / modifiers
+              }}
+            >
+              <div className="pos-product-main">
+                <div className="pos-product-name">{p.name}</div>
 
-              {!loading &&
-                !error &&
-                filteredProducts.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    className="pos-product-card"
-                    onClick={() => onProductClick(p)}
-                  >
-                    <div>
-                      <div className="pos-product-name">{p.name}</div>
-                      <div className="pos-product-price">
-                        € {p.price.toFixed(2)}
-                      </div>
-                      {p.badge && (
-                        <span className="pos-product-badge">{p.badge}</span>
-                      )}
-                    </div>
-                    <span className="pos-product-add-button">Toevoegen</span>
-                  </button>
-                ))}
-            </div>
-          </div>
-        </section>
-
-        {/* RECHTERKANT – bon */}
-        <aside className="pos-right pos-order">
-          <div className="pos-order-header">
-            <div className="pos-order-title">Bon #{currentTicketNumber}</div>
-            <span className="pos-order-status">Actief</span>
-          </div>
-
-          <div className="pos-parked-orders">
-            <span className="pos-parked-title">Geparkeerde bonnen</span>
-            <div className="pos-parked-list">
-              {parkedOrders.length === 0 ? (
-                <span className="pos-parked-empty">Geen</span>
-              ) : (
-                parkedOrders.map((o) => (
-                  <button
-                    key={o.id}
-                    type="button"
-                    className="pos-parked-chip"
-                    onClick={() => handleRestoreParkedOrder(o.id)}
-                  >
-                    {o.label} · € {o.totals.total.toFixed(2)}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="pos-order-lines">
-            {orderLines.length === 0 ? (
-              <div className="pos-order-empty">
-                (Nog geen items op de bon)
-              </div>
-            ) : (
-              orderLines.map((l) => (
-                <div key={l.productId} className="pos-order-line">
-                  <div>
-                    <div className="pos-order-line-name">{l.name}</div>
-                    <div className="pos-order-line-sub">
-                      {l.qty} × € {l.price.toFixed(2)}
-                    </div>
-                  </div>
-
-                  <div className="pos-order-line-controls">
-                    <button
-                      type="button"
-                      className="pos-qty-button"
-                      onClick={() => decreaseQty(l.productId)}
-                    >
-                      -
-                    </button>
-                    <span className="pos-qty-value">{l.qty}</span>
-                    <button
-                      type="button"
-                      className="pos-qty-button"
-                      onClick={() => increaseQty(l.productId)}
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      className="pos-remove-button"
-                      onClick={() => removeLine(l.productId)}
-                    >
-                      🗑️
-                    </button>
-                    <div className="pos-order-line-total">
-                      € {(l.qty * l.price).toFixed(2)}
-                    </div>
-                  </div>
+                <div className="pos-product-badges">
+                  {p.popular && (
+                    <span className="pos-product-badge">Populair</span>
+                  )}
+                  {p.bestSeller && (
+                    <span className="pos-product-badge">Meest verkocht</span>
+                  )}
+                  {p.isNew && <span className="pos-product-badge">Nieuw</span>}
                 </div>
-              ))
-            )}
-          </div>
+              </div>
 
-          <div className="pos-order-summary">
-            <div className="pos-order-summary-row">
-              <span>Subtotaal</span>
-              <span>€ {totals.subtotal.toFixed(2)}</span>
-            </div>
-            <div className="pos-order-summary-row">
-              <span>Korting</span>
-              <span>€ {totals.discount.toFixed(2)}</span>
-            </div>
-            <div className="pos-order-summary-row total">
-              <span>Totaal (incl. btw)</span>
-              <span>€ {totals.total.toFixed(2)}</span>
-            </div>
-          </div>
-
-          <div className="pos-order-actions">
-            <button
-              type="button"
-              className="pos-secondary-button"
-              onClick={handleParkOrder}
-            >
-              Parkeer bon
+              <div className="pos-product-footer">
+                <span className="pos-product-add">Toevoegen</span>
+                <span className="pos-product-price">
+                  € {p.price.toFixed(2)}
+                </span>
+              </div>
             </button>
-            <button
-              type="button"
-              className="pos-secondary-button"
-              onClick={handleClearOrder}
-            >
-              Leeg bon
-            </button>
-            <button
-              type="button"
-              className="pos-pay-button"
-              onClick={() => setIsPaying(true)}
-              disabled={orderLines.length === 0}
-            >
-              Afrekenen
-            </button>
-          </div>
-        </aside>
+          ))}
+        </div>
       </div>
 
-      {/* ONDERBALK */}
+      {/* RECHTERKANT – bonpaneel */}
+      <aside className="pos-ticket-area">
+        <div className="pos-ticket-header">
+          <span className="pos-ticket-title">Bon #123</span>
+          <span className="pos-ticket-status">Actief</span>
+        </div>
+
+        <div className="pos-ticket-lines">
+          <p>Geparkeerde bonnen: Geen</p>
+          <p>(Nog geen items op de bon)</p>
+        </div>
+
+        <div className="pos-ticket-summary">
+          <div className="pos-ticket-summary-row">
+            <span>Subtotaal</span>
+            <span>€ {subtotal.toFixed(2)}</span>
+          </div>
+          <div className="pos-ticket-summary-row">
+            <span>Korting</span>
+            <span>€ {discount.toFixed(2)}</span>
+          </div>
+          <div className="pos-ticket-summary-row total">
+            <span>Totaal (incl. btw)</span>
+            <span>€ {total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Acties onder de bon: Bon afbreken + Afrekenen */}
+        <div className="pos-ticket-actions">
+          <button
+            type="button"
+            className="pos-ticket-button pos-ticket-button--danger"
+            onClick={handleAbortTicket}
+          >
+            Bon afbreken
+          </button>
+          <button
+            type="button"
+            className="pos-ticket-button pos-ticket-button--primary"
+            onClick={handleOpenPay}
+          >
+            Afrekenen
+          </button>
+        </div>
+      </aside>
+
+      {/* ONDERBALK – alleen utility links */}
       <div className="pos-bottom-bar">
-        <button type="button" className="pos-bottom-button">
-          Bestellingen
-        </button>
-        <button type="button" className="pos-bottom-button">
-          Tafelbonnen
-        </button>
-        <button type="button" className="pos-bottom-button">
-          Planning
-        </button>
-        <button type="button" className="pos-bottom-button">
-          Cadeaukaart
-        </button>
-        <button type="button" className="pos-bottom-button">
-          Print laatste bon
-        </button>
+        <div className="pos-bottom-left">
+          <button
+            className="pos-bottom-button"
+            onClick={() => navigate("/pos/kassa")}
+          >
+            Bestellingen
+          </button>
+          <button
+            className="pos-bottom-button"
+            onClick={() => navigate("/pos/tables")}
+          >
+            Tafelbonnen
+          </button>
+          <button
+            className="pos-bottom-button"
+            onClick={() => navigate("/pos/planning")}
+          >
+            Planning
+          </button>
+          <button
+            className="pos-bottom-button"
+            onClick={() => {
+              // TODO: korting-overlay of /pos/discounts
+            }}
+          >
+            Korting
+          </button>
+          <button
+            className="pos-bottom-button"
+            onClick={() => navigate("/pos/giftcards")}
+          >
+            Cadeaukaart
+          </button>
+          <button
+            className="pos-bottom-button"
+            onClick={() => navigate("/pos/customers")}
+          >
+            Klanten
+          </button>
+          <button
+            className="pos-bottom-button"
+            onClick={() => navigate("/pos/reports")}
+          >
+            Rapporten
+          </button>
+          <button
+            className="pos-bottom-button"
+            onClick={() => {
+              // TODO: /pos/settings of instellingen-overlay
+            }}
+          >
+            Instellingen
+          </button>
+          <button
+            className="pos-bottom-button"
+            onClick={() => {
+              // TODO: print laatste bon
+            }}
+          >
+            Print laatste bon
+          </button>
+        </div>
       </div>
 
-      {/* BETALING OVERLAY */}
-      {isPaying && (
+      {/* BETAALSCHERM OVERLAY */}
+      {isPayOpen && (
         <div className="pos-pay-overlay">
           <div className="pos-pay-panel">
             <div className="pos-pay-header">
-              <h3>Betaling</h3>
+              <h3>Betalen</h3>
               <button
-                type="button"
                 className="pos-pay-close"
-                onClick={() => setIsPaying(false)}
+                onClick={() => setIsPayOpen(false)}
               >
-                ✕
+                ×
               </button>
             </div>
 
             <div className="pos-pay-amount">
-              Te betalen: <strong>€ {totals.total.toFixed(2)}</strong>
+              Totaal: <strong>€ {total.toFixed(2)}</strong>
             </div>
 
             <div className="pos-pay-methods">
-              {["cash", "card", "sumup", "qr"].map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  className={
-                    "pos-pay-method" +
-                    (paymentMethod === m ? " is-selected" : "")
-                  }
-                  onClick={() => setPaymentMethod(m as PaymentMethod)}
-                >
-                  {m === "cash" && "Contant"}
-                  {m === "card" && "Pin / Bankkaart"}
-                  {m === "sumup" && "SumUp terminal"}
-                  {m === "qr" && "QR / Wallet"}
-                </button>
-              ))}
+              <button
+                type="button"
+                className={
+                  "pos-pay-method" +
+                  (paymentMethod === "cash" ? " is-selected" : "")
+                }
+                onClick={() => setPaymentMethod("cash")}
+              >
+                Contant
+              </button>
+              <button
+                type="button"
+                className={
+                  "pos-pay-method" +
+                  (paymentMethod === "card" ? " is-selected" : "")
+                }
+                onClick={() => setPaymentMethod("card")}
+              >
+                Pin / Kaart
+              </button>
+              <button
+                type="button"
+                className={
+                  "pos-pay-method" +
+                  (paymentMethod === "ideal" ? " is-selected" : "")
+                }
+                onClick={() => setPaymentMethod("ideal")}
+              >
+                iDEAL
+              </button>
             </div>
 
             <div className="pos-pay-actions">
               <button
                 type="button"
-                className="pos-secondary-button"
-                onClick={() => setIsPaying(false)}
+                className="pos-pay-cancel"
+                onClick={() => {
+                  setIsPayOpen(false);
+                  setPaymentMethod(null);
+                }}
               >
-                Annuleer
+                Annuleren
               </button>
               <button
                 type="button"
                 className="pos-pay-confirm"
                 disabled={!paymentMethod}
-                onClick={handleConfirmPayment}
+                onClick={handleConfirmPay}
               >
                 Bevestig betaling
               </button>
@@ -479,6 +321,6 @@ export default function PosPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -1,7 +1,7 @@
-// frontend/src/layout/pos/PosLayout.tsx
-
-import { useState, useMemo } from "react";
+// frontend/src/components/pos/PosLayout.tsx
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
+
 import POSMenuButton from "./POSMenuButton";
 import POSSidebar from "./POSSidebar";
 import POSSidebarOverlay from "./POSSidebarOverlay";
@@ -9,21 +9,22 @@ import { posMenu, type MenuItem } from "./menuConfig";
 
 export default function PosLayout() {
   const [open, setOpen] = useState(false);
-
-  // Menu-items komen volledig uit menuConfig
-  const items: MenuItem[] = useMemo(() => posMenu, []);
+  const items: MenuItem[] = posMenu;
 
   return (
-    <div className="pos-layout">
-      <header className="pos-layout-header">
+    <div className="pos-shell">
+      {/* Topbar */}
+      <header className="pos-topbar">
         <POSMenuButton onClick={() => setOpen(true)} />
-        <div className="pos-layout-title">Tably POS</div>
+        <div className="pos-topbar-title">Tably POS</div>
       </header>
 
+      {/* Sidebar + overlay */}
       <POSSidebar open={open} onClose={() => setOpen(false)} items={items} />
       <POSSidebarOverlay open={open} onClose={() => setOpen(false)} />
 
-      <main className="pos-layout-content">
+      {/* Pagina-content (kassa, producten, voorraad, etc.) */}
+      <main className="pos-content">
         <Outlet />
       </main>
     </div>

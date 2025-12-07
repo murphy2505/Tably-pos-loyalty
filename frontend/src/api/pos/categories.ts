@@ -1,12 +1,12 @@
 // frontend/src/api/pos/categories.ts
 
-export type Category = {
+export interface PosCategory {
   id: string;
   name: string;
   color?: string | null;
-  order?: number | null;
+  order?: number;
   parentId?: string | null;
-};
+}
 
 const TENANT_ID = "demo-tenant";
 const DEV_TOKEN = "DUMMY_DEV_TOKEN";
@@ -19,7 +19,18 @@ async function parseJsonResponse(res: Response) {
   return res.json();
 }
 
-export async function getCategories(): Promise<Category[]> {
+export async function fetchCategories(): Promise<PosCategory[]> {
+  const res = await fetch("/pos/core/categories", {
+    headers: {
+      "Content-Type": "application/json",
+      "x-tenant-id": TENANT_ID,
+    },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getCategories(): Promise<PosCategory[]> {
   const res = await fetch("/pos/core/categories", {
     headers: {
       "Content-Type": "application/json",
@@ -35,7 +46,7 @@ export async function createCategory(payload: {
   color?: string;
   order?: number;
   parentId?: string | null;
-}): Promise<Category> {
+}): Promise<PosCategory> {
   const res = await fetch("/pos/core/categories", {
     method: "POST",
     headers: {
@@ -45,13 +56,14 @@ export async function createCategory(payload: {
     },
     body: JSON.stringify(payload),
   });
-  return parseJsonResponse(res);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
 export async function updateCategory(
   id: string,
-  payload: Partial<Pick<Category, "name" | "color" | "order" | "parentId">>
-): Promise<Category> {
+  payload: Partial<Pick<PosCategory, "name" | "color" | "order" | "parentId">>
+): Promise<PosCategory> {
   const res = await fetch(`/pos/core/categories/${id}`, {
     method: "PUT",
     headers: {
@@ -61,7 +73,8 @@ export async function updateCategory(
     },
     body: JSON.stringify(payload),
   });
-  return parseJsonResponse(res);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
 export async function deleteCategory(id: string): Promise<void> {

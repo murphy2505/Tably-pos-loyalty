@@ -1,7 +1,6 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
-  // LET OP: relationMode weggehaald, dus default = "foreignKeys"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -14,536 +13,105 @@ generator client {
 // ==========================
 //
 
-model Category {
-  id        String    @id @default(cuid())
-  tenantId  String
-  name      String
-  color     String?
-  order     Int
-  parentId  String?
-
-  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryHierarchy")
-
-  products  Product[]
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@index([tenantId])
-  @@unique([tenantId, name])
-}
-
 model RevenueGroup {
   id        String   @id @default(cuid())
   tenantId  String
   name      String
   color     String?
-  products  Product[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([tenantId])
-  @@unique([tenantId, name])
+  products  Product[]
+
+  @@index([tenantId, name])
 }
 
-//
-// ==========================
-//  PRODUCT + VARIANTS
-// ==========================
-//
+model Category {
+  id         String   @id @default(cuid())
+  tenantId   String
+  name       String
+  color      String?
+  sortOrder  Int       @default(0)
+  isActive   Boolean   @default(true)
+
+  products   Product[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([tenantId, sortOrder])
+}
 
 model Product {
-  id             String        @id @default(cuid())
+  id             String   @id @default(cuid())
   tenantId       String
-  categoryId     String
+  locationId     String?
+
   name           String
-  active         Boolean       @default(true)
-  vatRate        Float         @default(9)
-
-  tileColor      String?
-  tileIcon       String?
-  imageUrl       String?
-
-  // Kitchen / longpress / KDS / info
   description    String?
-  shortLabel     String?
-  kitchenNotes   String?
-  recipe         String?       // receptuur tekst
-  preparation    String?       // bereidingswijze KDS
 
-  // Diet / kenmerken
-  isVegetarian   Boolean       @default(false)
-  isVegan        Boolean       @default(false)
-  isGlutenFree   Boolean       @default(false)
-  isLactoseFree  Boolean       @default(false)
-  spicyLevel     Int?
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id])
 
-  // POS functionaliteit
-  tracksStock    Boolean       @default(false)
-  printGroup     String?
-  isCombo        Boolean       @default(false)
-
-  // Relations
-  category       Category      @relation(fields: [categoryId], references: [id])
   revenueGroupId String?
   revenueGroup   RevenueGroup? @relation(fields: [revenueGroupId], references: [id])
 
+  isActive       Boolean @default(true)
+  isPopular      Boolean @default(false)
+  isBestSeller   Boolean @default(false)
+  isNew          Boolean @default(false)
+
+  allowDiscount  Boolean @default(true)
+  printGroup     String?
+
   variants       ProductVariant[]
+  ingredients    ProductIngredient[]
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  @@index([tenantId])
-  @@index([categoryId])
-  @@index([revenueGroupId])
-  @@unique([tenantId, categoryId, name])
+  @@index([tenantId, categoryId])
+  @@index([tenantId, revenueGroupId])
 }
 
 model ProductVariant {
-  id           String   @id @default(cuid())
-  productId    String
-  name         String
-  price        Decimal
-  costPrice    Decimal?
-  sku          String?
-  pluCode      String?
-  active       Boolean  @default(true)
+  id            String   @id @default(cuid())
+  tenantId      String
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id])
 
-  product      Product   @relation(fields: [productId], references: [id])
-  ingredients  ProductIngredient[]
-  orderItems   OrderItem[]
+  name          String
+  sku           String?
 
-  // Nieuwe: koppeling variant ↔ modifiergroepen
-  modifierGroups VariantModifierGroup[]
+  priceInclVat  Decimal  @db.Decimal(10, 2)
+  vatRate       Decimal  @db.Decimal(4, 2)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
 
-  @@index([productId])
-  @@unique([productId, name])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId, productId])
 }
 
-//
-// ==========================
-//  STOCK / INGREDIENTS
-// ==========================
-//
-
 model StockItem {
-  id          String    @id @default(cuid())
-  tenantId    String
-  name        String
-  unit        String
-  quantity    Decimal   @default(0)
-  minimum     Decimal   @default(0)
-  allergens   String?   // CSV of JSON
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  unit      String
 
-  movements   StockMovement[]
   ingredients ProductIngredient[]
-
-  // Nieuwe: voorraadkoppeling via modifier-opties (bv. extra kaas)
-  modifierIngredients ModifierOptionIngredient[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([tenantId])
-  @@unique([tenantId, name])
 }
 
 model ProductIngredient {
-  id          String  @id @default(cuid())
-  variantId   String
-  stockItemId String
-  amount      Decimal
+  id           String   @id @default(cuid())
+  tenantId     String
+  productId    String
+  product      Product   @relation(fields: [productId], references: [id])
 
-  variant     ProductVariant @relation(fields: [variantId], references: [id])
-  stockItem   StockItem      @relation(fields: [stockItemId], references: [id])
-
-  @@index([variantId])
-  @@index([stockItemId])
-}
-
-model StockMovement {
-  id           String    @id @default(cuid())
   stockItemId  String
-  type         String    // PURCHASE | SALE | WASTE | ADJUSTMENT | SALE_CANCEL
-  amount       Decimal
-  createdAt    DateTime  @default(now())
-
-  employeeId   String?
-  employee     Employee? @relation(fields: [employeeId], references: [id])
-
-  orderItemId  String?
-  orderItem    OrderItem? @relation(fields: [orderItemId], references: [id])
-
-  reversalOfId String?
-
   stockItem    StockItem @relation(fields: [stockItemId], references: [id])
 
-  @@index([stockItemId])
-  @@index([createdAt])
-  @@index([employeeId])
-  @@index([orderItemId])
-}
-
-//
-// ==========================
-//  MODIFIERS (OPTIES / SAUZEN)
-// ==========================
-//
-// Let op: Strings i.v.m. SQLite (geen enums):
-//  - type velden (bv. later GROUP_TYPE) gewoon als String met vaste waarden.
-//
-
-model ModifierGroup {
-  id          String   @id @default(cuid())
-  tenantId    String
-
-  name        String
-  description String?
-
-  // Selectie-regels
-  minRequired Int      @default(0)     // minimum aantal keuzes
-  maxAllowed  Int?                     // maximum aantal keuzes (NULL = onbeperkt)
-  freeChoices Int      @default(0)     // aantal gratis keuzes binnen de groep
-  isRequired  Boolean  @default(false) // moet gebruiker minstens minRequired kiezen?
-
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-
-  // Relations
-  options     ModifierOption[]
-  variants    VariantModifierGroup[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([tenantId])
-  @@unique([tenantId, name])
-}
-
-model ModifierOption {
-  id          String   @id @default(cuid())
-  groupId     String
-  tenantId    String
-
-  name        String
-  shortLabel  String?
-  priceDelta  Decimal  @default(0)     // +0.50 voor extra kaas, -0.50 voor saus weg
-  isDefault   Boolean  @default(false)
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-
-  color       String?
-  icon        String?
-
-  group       ModifierGroup @relation(fields: [groupId], references: [id])
-
-  // Koppelingen
-  variantLinks     VariantModifierOption[]
-  orderItemOptions OrderItemModifier[]
-  stockIngredients ModifierOptionIngredient[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([groupId])
-  @@index([tenantId])
-}
-
-model VariantModifierGroup {
-  id          String   @id @default(cuid())
-  variantId   String
-  groupId     String
-
-  // Per variant kun je regels overriden
-  minRequired Int?
-  maxAllowed  Int?
-  freeChoices Int?
-
-  sortOrder   Int      @default(0)
-
-  variant     ProductVariant @relation(fields: [variantId], references: [id])
-  group       ModifierGroup  @relation(fields: [groupId], references: [id])
-
-  // Relatie naar concrete opties die voor deze variant gelden
-  options     VariantModifierOption[]
-
-  @@index([variantId])
-  @@index([groupId])
-  @@unique([variantId, groupId])
-}
-
-model VariantModifierOption {
-  id                String   @id @default(cuid())
-  variantModifierGroupId String
-  modifierOptionId  String
-
-  isDefaultForVariant Boolean @default(false)
-
-  groupLink      VariantModifierGroup @relation(fields: [variantModifierGroupId], references: [id])
-  modifierOption ModifierOption       @relation(fields: [modifierOptionId], references: [id])
-
-  @@index([variantModifierGroupId])
-  @@index([modifierOptionId])
-  @@unique([variantModifierGroupId, modifierOptionId])
-}
-
-model ModifierOptionIngredient {
-  id               String  @id @default(cuid())
-  modifierOptionId String
-  stockItemId      String
-  amount           Decimal
-
-  modifierOption   ModifierOption @relation(fields: [modifierOptionId], references: [id])
-  stockItem        StockItem      @relation(fields: [stockItemId], references: [id])
-
-  @@index([modifierOptionId])
-  @@index([stockItemId])
-}
-
-//
-// ==========================
-//  EMPLOYEES / TABLES
-// ==========================
-//
-
-model Employee {
-  id         String          @id @default(cuid())
-  tenantId   String
-  name       String
-  pinCode    String?
-  role       String?
-
-  orders     Order[]
-  payments   Payment[]
-  stockMoves StockMovement[]
-
-  @@index([tenantId])
-}
-
-model Table {
-  id         String   @id @default(cuid())
-  tenantId   String
-  locationId String
-  name       String
-  state      String   // FREE | SEATED | BILL_OPEN
-
-  @@index([tenantId, locationId])
-}
-
-//
-// ==========================
-//  ORDERS / PAYMENTS / SNAPSHOTS
-// ==========================
-//
-
-model Order {
-  id           String      @id @default(cuid())
-  tenantId     String
-  locationId   String
-  tableId      String?
-  status       String
-  createdAt    DateTime    @default(now())
-
-  cancelledAt  DateTime?
-  cancelReason String?
-
-  employeeId   String?
-  employee     Employee? @relation(fields: [employeeId], references: [id])
-
-  deviceId     String?
-  source       String?   // POS | WEB | APP | KIOSK | CALL
-  dineType     String?   // TAKEAWAY | EATIN | DELIVERY
-
-  items        OrderItem[]
-  payments     Payment[]
-
-  @@index([tenantId, locationId])
-  @@index([tableId])
-  @@index([status])
-  @@index([createdAt])
-  @@index([employeeId])
-  @@index([deviceId])
-}
-
-model OrderItem {
-  id               String          @id @default(cuid())
-  orderId          String
-  variantId        String
-  quantity         Int
-  priceEach        Decimal
-  discount         Decimal         @default(0)
-
-  // --- SNAPSHOTS ---
-  productId        String
-  productName      String
-  variantName      String
-  categoryId       String?
-  categoryName     String?
-  revenueGroupId   String?
-  revenueGroupName String?
-  vatRateSnapshot  Decimal
-  allergensSummary String?
-
-  order            Order          @relation(fields: [orderId], references: [id])
-  variant          ProductVariant @relation(fields: [variantId], references: [id])
-
-  stockMovements   StockMovement[]
-
-  // Nieuwe: gekozen modifiers op deze regel (bon/KDS/rapport)
-  modifiers        OrderItemModifier[]
-
-  @@index([orderId])
-  @@index([variantId])
-  @@index([revenueGroupId])
-}
-
-model OrderItemModifier {
-  id               String   @id @default(cuid())
-  orderItemId      String
-  modifierOptionId String?
-
-  // Snapshot voor bon / rapportage
-  groupName        String
-  optionName       String
-  priceDelta       Decimal  // wat is er extra/af gerekend op deze regel
-
-  orderItem        OrderItem      @relation(fields: [orderItemId], references: [id])
-  modifierOption   ModifierOption? @relation(fields: [modifierOptionId], references: [id])
-
-  @@index([orderItemId])
-  @@index([modifierOptionId])
-}
-
-model Payment {
-  id          String    @id @default(cuid())
-  orderId     String
-  method      String
-  amount      Decimal
-  createdAt   DateTime  @default(now())
-
-  employeeId  String?
-  employee    Employee? @relation(fields: [employeeId], references: [id])
-
-  order       Order     @relation(fields: [orderId], references: [id])
-
-  @@index([orderId])
-  @@index([createdAt])
-  @@index([employeeId])
-}
-
-// -----------------------------
-// Menukaarten (POS + Webshop)
-// -----------------------------
-
-// Let op: geen Prisma-enums i.v.m. SQLite;
-// we gebruiken Strings met vaste waarden:
-//
-// Menu.channel:
-//   "POS" | "WEBSHOP" | "BOTH"
-//
-// Menu.layoutType:
-//   "GRID" | "LIST"
-//
-// MenuItem.tileSize:
-//   "AUTO" | "SMALL" | "MEDIUM" | "LARGE"
-
-model Menu {
-  id           String   @id @default(cuid())
-  tenantId     String
-
-  name         String
-  slug         String
-  description  String?
-
-  channel      String   @default("BOTH")  // POS | WEBSHOP | BOTH
-  layoutType   String   @default("GRID")  // GRID | LIST
-
-  // Basis layout-config per menukaart
-  columns      Int?                    // bv. 3 voor handheld, 5–6 voor balie
-  showImages   Boolean  @default(true)
-  showPrices   Boolean  @default(true)
-
-  sortOrder    Int      @default(0)
-  isActive     Boolean  @default(true)
-
-  sections     MenuSection[]
-  items        MenuItem[]
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@unique([tenantId, slug])
-  @@index([tenantId])
-}
-
-model MenuSection {
-  id           String   @id @default(cuid())
-  menuId       String
-  tenantId     String
-
-  name         String
-  description  String?
-  icon         String?   // bv. "🍟" of een icon-key
-  color        String?   // hex of tailwind-key (voor tabs / headers)
-
-  sortOrder    Int       @default(0)
-  isVisible    Boolean   @default(true)
-
-  // Optioneel: koppelen aan een bestaande categorie
-  categoryId   String?
-  // category    Category?  @relation(fields: [categoryId], references: [id])
-
-  menu         Menu      @relation(fields: [menuId], references: [id])
-  items        MenuItem[]
-
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  @@index([menuId])
-  @@index([tenantId])
-  @@index([categoryId])
-}
-
-model MenuItem {
-  id               String   @id @default(cuid())
-  menuId           String
-  tenantId         String
-
-  sectionId        String?
-  section          MenuSection? @relation(fields: [sectionId], references: [id])
-
-  // Koppeling naar product/variant (geen relation object, alleen id’s)
-  productId        String?
-  productVariantId String?
-
-  // Weergave in POS / webshop
-  label            String?   // override van productnaam
-  shortLabel       String?   // compacte naam voor kleine tegels
-  badge            String?   // bijv. "NEW", "POPULAIR", "ACTIE"
-  color            String?   // tegelkleur (mint, pastel, etc.)
-
-  tileSize         String    @default("AUTO") // AUTO | SMALL | MEDIUM | LARGE
-  isFavorite       Boolean   @default(false)
-  isVisible        Boolean   @default(true)
-
-  sortOrder        Int       @default(0)
-
-  showPrice        Boolean   @default(true)
-  showImage        Boolean   @default(true)
-
-  menu             Menu      @relation(fields: [menuId], references: [id])
-
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  @@index([menuId])
-  @@index([tenantId])
-  @@index([sectionId])
-  @@index([productId])
-  @@index([productVariantId])
+  quantity     Decimal   @db.Decimal(10, 3)
 }
