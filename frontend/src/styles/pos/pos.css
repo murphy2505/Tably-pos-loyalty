@@ -412,9 +412,9 @@
    6. POS ADMIN PAGINA'S (Products, Categories, Stock, ...)
    ========================================================= */
 
-.pos-admin-page {
-  /* draait ook binnen PosLayout → 1 kolom layout gebruiken */
-}
+/* .pos-admin-page {
+  draait ook binnen PosLayout → 1 kolom layout gebruiken
+} */
 
 .pos-admin-page .pos-content {
   grid-template-columns: minmax(0, 1fr);

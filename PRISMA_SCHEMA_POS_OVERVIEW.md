@@ -1,3 +1,5 @@
+## schema.prisma
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -196,3 +198,9 @@ model MenuItem {
   @@index([tenantId, sectionId])
   @@index([tenantId, productId])
 }
+
+## migration <most-recent-migration-folder-name>
+
+// ...existing code...
+// Paste the full SQL of the most recent migration here once identified.
+// ...existing code...

@@ -1,7 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+// services/pos/src/services/menuItemService.ts
 
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma";
 
+/**
+ * Haal alle menu-items voor een tenant + menuId.
+ */
 export async function listMenuItems(tenantId: string, menuId: string) {
   return prisma.menuItem.findMany({
     where: { tenantId, menuId },
@@ -9,24 +12,32 @@ export async function listMenuItems(tenantId: string, menuId: string) {
   });
 }
 
+/**
+ * Input type voor het aanmaken van een menu-item.
+ * LET OP:
+ * We houden deze bewust in lijn met het Prisma-model:
+ * - tenantId (apart argument)
+ * - menuId (verplicht)
+ * - sectionId? (optioneel)
+ * - productId? (optioneel)
+ * - sortOrder? (optioneel, wordt automatisch bepaald als hij ontbreekt)
+ * - isActive? (optioneel, default = true)
+ */
+export type CreateMenuItemInput = {
+  menuId: string;
+  sectionId?: string | null;
+  productId?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+/**
+ * Maak een nieuw menu-item.
+ * Bepaalt automatisch sortOrder = laatste + 1 als die niet is meegegeven.
+ */
 export async function createMenuItem(
   tenantId: string,
-  data: {
-    menuId: string;
-    sectionId?: string | null;
-    productId?: string | null;
-    productVariantId?: string | null;
-    label?: string | null;
-    shortLabel?: string | null;
-    badge?: string | null;
-    color?: string | null;
-    tileSize?: string;
-    isFavorite?: boolean;
-    isVisible?: boolean;
-    sortOrder?: number;
-    showPrice?: boolean;
-    showImage?: boolean;
-  }
+  data: CreateMenuItemInput
 ) {
   // Bepaal sortOrder: laatste + 1
   const maxSort = await prisma.menuItem.aggregate({
@@ -34,7 +45,10 @@ export async function createMenuItem(
     _max: { sortOrder: true },
   });
 
-  const sortOrder = data.sortOrder ?? (maxSort._max.sortOrder ?? 0) + 1;
+  const sortOrder =
+    typeof data.sortOrder === "number"
+      ? data.sortOrder
+      : (maxSort._max.sortOrder ?? 0) + 1;
 
   return prisma.menuItem.create({
     data: {
@@ -42,58 +56,69 @@ export async function createMenuItem(
       menuId: data.menuId,
       sectionId: data.sectionId ?? null,
       productId: data.productId ?? null,
-      productVariantId: data.productVariantId ?? null,
-      label: data.label ?? null,
-      shortLabel: data.shortLabel ?? null,
-      badge: data.badge ?? null,
-      color: data.color ?? null,
-      tileSize: data.tileSize ?? "AUTO",
-      isFavorite: data.isFavorite ?? false,
-      isVisible: data.isVisible ?? true,
       sortOrder,
-      showPrice: data.showPrice ?? true,
-      showImage: data.showImage ?? true,
+      isActive: data.isActive ?? true,
     },
   });
 }
 
+/**
+ * Input type voor update; alleen velden die in het Prisma-model zitten.
+ */
+export type UpdateMenuItemInput = {
+  sectionId?: string | null;
+  productId?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+/**
+ * Update een menu-item (alleen toegestane velden).
+ * We gebruiken updateMany om veilig op tenantId + id te filteren.
+ */
 export async function updateMenuItem(
   tenantId: string,
   id: string,
-  data: Partial<{
-    sectionId: string | null;
-    productId: string | null;
-    productVariantId: string | null;
-    label: string | null;
-    shortLabel: string | null;
-    badge: string | null;
-    color: string | null;
-    tileSize: string;
-    isFavorite: boolean;
-    isVisible: boolean;
-    sortOrder: number;
-    showPrice: boolean;
-    showImage: boolean;
-  }>
+  data: UpdateMenuItemInput
 ) {
+  const updateData: UpdateMenuItemInput = {};
+
+  if (data.sectionId !== undefined) {
+    updateData.sectionId = data.sectionId;
+  }
+  if (data.productId !== undefined) {
+    updateData.productId = data.productId;
+  }
+  if (data.sortOrder !== undefined) {
+    updateData.sortOrder = data.sortOrder;
+  }
+  if (data.isActive !== undefined) {
+    updateData.isActive = data.isActive;
+  }
+
   return prisma.menuItem.updateMany({
     where: { id, tenantId },
-    data,
+    data: updateData,
   });
 }
 
+/**
+ * Verwijder een menu-item voor deze tenant.
+ */
 export async function deleteMenuItem(tenantId: string, id: string) {
   return prisma.menuItem.deleteMany({
     where: { id, tenantId },
   });
 }
 
+/**
+ * Reorder: zet sortOrder = index+1 voor de opgegeven orderedIds.
+ */
 export async function reorderMenuItems(
   tenantId: string,
   menuId: string,
   orderedIds: string[]
 ) {
-  // heel simpel: loop en zet sortOrder = index
   const updates = orderedIds.map((id, index) =>
     prisma.menuItem.updateMany({
       where: { id, tenantId, menuId },

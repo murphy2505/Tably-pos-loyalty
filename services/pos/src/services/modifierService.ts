@@ -1,10 +1,15 @@
 // services/pos/src/services/modifierService.ts
-import { PrismaClient, ModifierGroup, ModifierOption } from "@prisma/client";
+//
+// LET OP:
+// In het huidige Prisma schema bestaan géén ModifierGroup / ModifierOption modellen.
+// Deze service is daarom tijdelijk een "stub" zodat de POS service compileert.
+// Later, als we modifier-modellen aan het Prisma schema toevoegen, vullen we deze
+// functies weer met echte Prisma-calls.
 
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma";
 
 // --------------------
-// Types (DTO)
+// Types (DTO) – kunnen we alvast laten staan
 // --------------------
 export interface ModifierGroupInput {
   name: string;
@@ -28,89 +33,54 @@ export interface ModifierOptionInput {
   icon?: string | null;
 }
 
+// Kleine helper zodat we overal dezelfde foutmelding gebruiken
+function notImplemented() {
+  throw new Error(
+    "Modifiers zijn nog niet geïmplementeerd: er zijn geen ModifierGroup/ModifierOption modellen in het Prisma schema."
+  );
+}
+
 // --------------------
 // Groups
 // --------------------
-export async function listModifierGroups(tenantId: string) {
-  return prisma.modifierGroup.findMany({
-    where: { tenantId },
-    orderBy: { sortOrder: "asc" },
-    include: {
-      options: {
-        orderBy: { sortOrder: "asc" },
-      },
-    },
-  });
+export async function listModifierGroups(tenantId: string): Promise<any[]> {
+  // Voor nu: geen data, lege lijst teruggeven
+  console.warn(
+    "[modifierService] listModifierGroups aangeroepen, maar modifiers zijn nog niet geïmplementeerd."
+  );
+  return [];
 }
 
-export async function getModifierGroupById(tenantId: string, id: string) {
-  return prisma.modifierGroup.findFirst({
-    where: { id, tenantId },
-    include: {
-      options: {
-        orderBy: { sortOrder: "asc" },
-      },
-    },
-  });
+export async function getModifierGroupById(
+  tenantId: string,
+  id: string
+): Promise<any | null> {
+  console.warn(
+    "[modifierService] getModifierGroupById aangeroepen, maar modifiers zijn nog niet geïmplementeerd."
+  );
+  return null;
 }
 
 export async function createModifierGroup(
   tenantId: string,
   data: ModifierGroupInput
-): Promise<ModifierGroup> {
-  return prisma.modifierGroup.create({
-    data: {
-      tenantId,
-      name: data.name,
-      description: data.description ?? null,
-      minRequired: data.minRequired ?? 0,
-      maxAllowed: data.maxAllowed ?? null,
-      freeChoices: data.freeChoices ?? 0,
-      isRequired: data.isRequired ?? false,
-      sortOrder: data.sortOrder ?? 0,
-      isActive: data.isActive ?? true,
-    },
-  });
+): Promise<any> {
+  notImplemented();
 }
 
 export async function updateModifierGroup(
   tenantId: string,
   id: string,
   data: Partial<ModifierGroupInput>
-): Promise<ModifierGroup | null> {
-  const existing = await prisma.modifierGroup.findFirst({
-    where: { id, tenantId },
-  });
-  if (!existing) return null;
-
-  return prisma.modifierGroup.update({
-    where: { id },
-    data: {
-      name: data.name ?? existing.name,
-      description: data.description ?? existing.description,
-      minRequired: data.minRequired ?? existing.minRequired,
-      maxAllowed:
-        data.maxAllowed === undefined ? existing.maxAllowed : data.maxAllowed,
-      freeChoices: data.freeChoices ?? existing.freeChoices,
-      isRequired: data.isRequired ?? existing.isRequired,
-      sortOrder: data.sortOrder ?? existing.sortOrder,
-      isActive: data.isActive ?? existing.isActive,
-    },
-  });
+): Promise<any | null> {
+  notImplemented();
 }
 
 export async function deleteModifierGroup(
   tenantId: string,
   id: string
 ): Promise<void> {
-  // eerst opties weggooien
-  await prisma.modifierOption.deleteMany({
-    where: { groupId: id, tenantId },
-  });
-
-  await prisma.modifierGroup.deleteMany({
-    where: { id, tenantId },
-  });
+  notImplemented();
 }
 
 // --------------------
@@ -120,61 +90,21 @@ export async function createModifierOption(
   tenantId: string,
   groupId: string,
   data: ModifierOptionInput
-): Promise<ModifierOption> {
-  const group = await prisma.modifierGroup.findFirst({
-    where: { id: groupId, tenantId },
-  });
-  if (!group) {
-    throw new Error("Modifier group not found for this tenant");
-  }
-
-  return prisma.modifierOption.create({
-    data: {
-      tenantId,
-      groupId,
-      name: data.name,
-      shortLabel: data.shortLabel ?? null,
-      priceDelta: data.priceDelta ? data.priceDelta : "0",
-      isDefault: data.isDefault ?? false,
-      isActive: data.isActive ?? true,
-      sortOrder: data.sortOrder ?? 0,
-      color: data.color ?? null,
-      icon: data.icon ?? null,
-    },
-  });
+): Promise<any> {
+  notImplemented();
 }
 
 export async function updateModifierOption(
   tenantId: string,
   id: string,
   data: Partial<ModifierOptionInput>
-): Promise<ModifierOption | null> {
-  const existing = await prisma.modifierOption.findFirst({
-    where: { id, tenantId },
-  });
-  if (!existing) return null;
-
-  return prisma.modifierOption.update({
-    where: { id },
-    data: {
-      name: data.name ?? existing.name,
-      shortLabel: data.shortLabel ?? existing.shortLabel,
-      priceDelta:
-        data.priceDelta === undefined ? existing.priceDelta : data.priceDelta,
-      isDefault: data.isDefault ?? existing.isDefault,
-      isActive: data.isActive ?? existing.isActive,
-      sortOrder: data.sortOrder ?? existing.sortOrder,
-      color: data.color ?? existing.color,
-      icon: data.icon ?? existing.icon,
-    },
-  });
+): Promise<any | null> {
+  notImplemented();
 }
 
 export async function deleteModifierOption(
   tenantId: string,
   id: string
 ): Promise<void> {
-  await prisma.modifierOption.deleteMany({
-    where: { id, tenantId },
-  });
+  notImplemented();
 }

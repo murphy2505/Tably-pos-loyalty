@@ -1,59 +1,180 @@
-import { Router } from "express";
-import { z } from "zod";
-import {
-  createCustomer as createCustomerSvc,
-  listCustomers,
-  getCustomerDetail,
-} from "../services/customersService";
+// services/pos/src/services/productService.ts
 
-const router = Router();
+import { prisma } from "../db/prisma";
 
-// POST /customers
-router.post("/", async (req, res) => {
-  const schema = z.object({
-    name: z.string().min(1),
-    phone: z.string().min(3),
-    email: z.string().email().optional(),
+// =======================
+// Types (DTO)
+// =======================
+
+export type CreateProductInput = {
+  locationId?: string | null;
+
+  name: string;
+  description?: string | null;
+
+  categoryId: string;
+  revenueGroupId?: string | null;
+
+  isActive?: boolean;
+  isPopular?: boolean;
+  isBestSeller?: boolean;
+  isNew?: boolean;
+
+  allowDiscount?: boolean;
+  printGroup?: string | null;
+};
+
+export type UpdateProductInput = Partial<CreateProductInput>;
+
+// =======================
+// Helpers
+// =======================
+
+/**
+ * Basis where-filter voor producten van een tenant.
+ */
+function baseWhere(tenantId: string, extra?: object) {
+  return {
+    tenantId,
+    ...(extra ?? {}),
+  };
+}
+
+// =======================
+// CRUD functies
+// =======================
+
+/**
+ * Haal alle producten voor een tenant op.
+ * Optioneel: alleen actieve producten.
+ */
+export async function listProducts(
+  tenantId: string,
+  options?: { includeInactive?: boolean }
+) {
+  const { includeInactive = false } = options ?? {};
+
+  return prisma.product.findMany({
+    where: baseWhere(tenantId, includeInactive ? {} : { isActive: true }),
+    orderBy: { name: "asc" },
+    include: {
+      category: true,
+      revenueGroup: true,
+      variants: true,
+    },
+  });
+}
+
+/**
+ * Haal een product op op id + tenant.
+ */
+export async function getProductById(tenantId: string, id: string) {
+  return prisma.product.findFirst({
+    where: baseWhere(tenantId, { id }),
+    include: {
+      category: true,
+      revenueGroup: true,
+      variants: true,
+    },
+  });
+}
+
+/**
+ * Maak een nieuw product aan voor een tenant.
+ */
+export async function createProduct(
+  tenantId: string,
+  data: CreateProductInput
+) {
+  return prisma.product.create({
+    data: {
+      tenantId,
+      locationId: data.locationId ?? null,
+
+      name: data.name.trim(),
+      description: data.description ?? null,
+
+      categoryId: data.categoryId,
+      revenueGroupId: data.revenueGroupId ?? null,
+
+      isActive: data.isActive ?? true,
+      isPopular: data.isPopular ?? false,
+      isBestSeller: data.isBestSeller ?? false,
+      isNew: data.isNew ?? false,
+
+      allowDiscount: data.allowDiscount ?? true,
+      printGroup: data.printGroup ?? null,
+    },
+  });
+}
+
+/**
+ * Update een product (alleen velden die zijn meegegeven).
+ */
+export async function updateProduct(
+  tenantId: string,
+  id: string,
+  data: UpdateProductInput
+) {
+  // Eerst checken of het product bij deze tenant hoort
+  const existing = await prisma.product.findFirst({
+    where: baseWhere(tenantId, { id }),
   });
 
-  const parsed = schema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.flatten() });
+  if (!existing) {
+    return null;
   }
 
-  try {
-    const customer = await createCustomerSvc(
-      parsed.data.name,
-      parsed.data.phone,
-      parsed.data.email
-    );
-    res.status(201).json(customer);
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
-  }
-});
+  return prisma.product.update({
+    where: { id },
+    data: {
+      // alleen invullen als ze aanwezig zijn in data
+      ...(data.locationId !== undefined && {
+        locationId: data.locationId,
+      }),
+      ...(data.name !== undefined && { name: data.name.trim() }),
+      ...(data.description !== undefined && {
+        description: data.description,
+      }),
+      ...(data.categoryId !== undefined && {
+        categoryId: data.categoryId,
+      }),
+      ...(data.revenueGroupId !== undefined && {
+        revenueGroupId: data.revenueGroupId,
+      }),
+      ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.isPopular !== undefined && { isPopular: data.isPopular }),
+      ...(data.isBestSeller !== undefined && {
+        isBestSeller: data.isBestSeller,
+      }),
+      ...(data.isNew !== undefined && { isNew: data.isNew }),
+      ...(data.allowDiscount !== undefined && {
+        allowDiscount: data.allowDiscount,
+      }),
+      ...(data.printGroup !== undefined && {
+        printGroup: data.printGroup,
+      }),
+    },
+  });
+}
 
-// GET /customers
-router.get("/", async (_req, res) => {
-  try {
-    const list = await listCustomers();
-    res.json(list);
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
-  }
-});
+/**
+ * Soft delete: zet isActive = false.
+ * (Zo breken we geen referenties vanuit varianten of menu-items.)
+ */
+export async function deleteProduct(tenantId: string, id: string) {
+  const existing = await prisma.product.findFirst({
+    where: baseWhere(tenantId, { id }),
+  });
 
-// GET /customers/:id
-router.get("/:id", async (req, res) => {
-  try {
-    const detail = await getCustomerDetail(req.params.id);
-    if (!detail) {
-      return res.status(404).json({ error: "Customer not found" });
-    }
-    res.json(detail);
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
+  if (!existing) {
+    return null;
   }
-});
 
-export default router;
+  return prisma.product.update({
+    where: { id },
+    data: {
+      isActive: false,
+    },
+  });
+}

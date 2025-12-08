@@ -1,28 +1,29 @@
+// services/pos/src/routes/variants.ts
+
 import { Router } from "express";
+import {
+  listVariantsHandler,
+  getVariantHandler,
+  createVariantHandler,
+  updateVariantHandler,
+  deleteVariantHandler,
+} from "../controllers/variantController";
+
 const router = Router();
 
-router.post("/", async (_req, res) => {
-  try {
-    res.status(201).json({ id: "var-1" });
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
-  }
-});
+// GET /pos/core/variants
+router.get("/", listVariantsHandler);
 
-router.put("/:id", async (_req, res) => {
-  try {
-    res.json({ ok: true });
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
-  }
-});
+// GET /pos/core/variants/:id
+router.get("/:id", getVariantHandler);
 
-router.delete("/:id", async (_req, res) => {
-  try {
-    res.status(204).send();
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
-  }
-});
+// POST /pos/core/variants
+router.post("/", createVariantHandler);
+
+// PUT /pos/core/variants/:id
+router.put("/:id", updateVariantHandler);
+
+// DELETE /pos/core/variants/:id
+router.delete("/:id", deleteVariantHandler);
 
 export default router;
