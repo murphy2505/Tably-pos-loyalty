@@ -14,6 +14,29 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  pos:
+    build:
+      context: ./services/pos
+    container_name: tably_pos_service
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://tably:tably@postgres:5432/tably_pos?schema=public
+      POS_PORT: 4002
+    depends_on:
+      - postgres
+    ports:
+      - "4002:4002"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: tably_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    # Frontend dev server proxies to localhost:4002 from the host browser.
+    # If you prefer container DNS, set Vite proxy target to http://pos:4002.
+
 volumes:
   postgres_data:
 

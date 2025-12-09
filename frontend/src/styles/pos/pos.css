@@ -114,6 +114,32 @@
   background: rgba(37, 99, 235, 0.18);
 }
 
+/* Groepsknop in de sidebar (bijv. "Producten") */
+.pos-menu-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+/* Caret pijltje rechts in de groepsknop */
+.pos-menu-group-caret {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Container voor children in een groep */
+.pos-menu-group-children {
+  padding-left: 8px;
+  margin-top: 4px;
+  border-left: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+/* Optioneel: highlight de groep als één van de children actief is */
+.pos-menu-item.pos-menu-group.is-active-group {
+  background: rgba(37, 99, 235, 0.28);
+}
+
 /* =========================================================
    3. KASSASCHERM – LINKER ZIJDE (PRODUCTEN)
    ========================================================= */

@@ -1,197 +1,218 @@
 // services/pos/src/controllers/productController.ts
+import { Request, Response } from "express";
+import { PrismaClient, Prisma } from "@prisma/client";
 
-import { Request, Response, NextFunction } from "express";
-import {
-  listProducts,
-  getProductById,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  CreateProductInput,
-  UpdateProductInput,
-} from "../services/productService";
+const prisma = new PrismaClient();
 
-/**
- * Haal tenantId uit req. We proberen eerst req.tenantId (middleware),
- * en vallen anders terug op de x-tenant-id header.
- */
 function getTenantId(req: Request): string {
-  const fromReq = (req as any).tenantId;
-  const fromHeader = req.headers["x-tenant-id"];
-
-  const tenantId =
-    typeof fromReq === "string"
-      ? fromReq
-      : typeof fromHeader === "string"
-      ? fromHeader
-      : null;
-
-  if (!tenantId) {
+  const tenantId = req.header("x-tenant-id");
+  if (!tenantId || typeof tenantId !== "string") {
     throw new Error("Missing tenantId");
   }
-
   return tenantId;
 }
 
-/**
- * GET /pos/core/products
- * Optioneel queryparam: ?includeInactive=true
- */
-export async function listProductsHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+// GET /pos/core/products
+export async function getAllProducts(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
-    const includeInactive =
-      String(req.query.includeInactive).toLowerCase() === "true";
 
-    const products = await listProducts(tenantId, { includeInactive });
+    const products = await prisma.product.findMany({
+      where: { tenantId },
+      include: {
+        // Alleen relaties die zeker in je schema staan
+        category: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
 
     res.json(products);
   } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
+    console.error("Error getAllProducts", err);
+    res.status(500).json({ message: "Failed to fetch products" });
   }
 }
 
-/**
- * GET /pos/core/products/:id
- */
-export async function getProductHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+// GET /pos/core/products/:id
+export async function getProductById(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
     const { id } = req.params;
 
-    if (!id) {
-      return res.status(400).json({ message: "id is verplicht in de URL" });
-    }
-
-    const product = await getProductById(tenantId, id);
+    const product = await prisma.product.findFirst({
+      where: { id, tenantId },
+      include: {
+        category: true,
+      },
+    });
 
     if (!product) {
-      return res.status(404).json({ message: "Product niet gevonden" });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     res.json(product);
   } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
+    console.error("Error getProductById", err);
+    res.status(500).json({ message: "Failed to fetch product" });
   }
 }
 
-/**
- * POST /pos/core/products
- * Body: CreateProductInput
- */
-export async function createProductHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+// POST /pos/core/products
+export async function createProduct(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
-    const body = req.body as CreateProductInput;
 
-    if (!body?.name || typeof body.name !== "string") {
-      return res.status(400).json({ message: "name is verplicht" });
+    const {
+      name,
+      priceIncl,
+      price,
+      vatRate,
+      categoryId,
+      revenueGroupId,
+    } = req.body as {
+      name?: string;
+      priceIncl?: string | number;
+      price?: string | number;
+      vatRate?: number;
+      categoryId?: string;
+      revenueGroupId?: string | null;
+    };
+
+    if (!name || typeof name !== "string") {
+      return res.status(400).json({ message: "Name is required" });
     }
 
-    if (!body?.categoryId || typeof body.categoryId !== "string") {
-      return res.status(400).json({ message: "categoryId is verplicht" });
+    if (!categoryId || typeof categoryId !== "string") {
+      return res.status(400).json({ message: "categoryId is required" });
     }
 
-    const product = await createProduct(tenantId, body);
+    const rawPrice = priceIncl ?? price;
+    if (rawPrice === undefined || rawPrice === null || rawPrice === "") {
+      return res
+        .status(400)
+        .json({ message: "priceIncl (or price) is required" });
+    }
+
+    const priceDecimal = new Prisma.Decimal(rawPrice.toString());
+    const finalVatRate = typeof vatRate === "number" ? vatRate : 21;
+
+    const data: Prisma.ProductUncheckedCreateInput = {
+      tenantId,
+      name,
+      categoryId,
+      priceIncl: priceDecimal,
+      vatRate: finalVatRate,
+      // alleen zetten als je dit veld in je schema hebt
+      // zo niet → haal deze regel weg
+      revenueGroupId: revenueGroupId ?? null,
+    };
+
+    const product = await prisma.product.create({
+      data,
+      include: {
+        category: true,
+      },
+    });
 
     res.status(201).json(product);
   } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
+    console.error("Error createProduct", err);
+    res.status(500).json({ message: "Failed to create product" });
   }
 }
 
-/**
- * PUT /pos/core/products/:id
- * Body: UpdateProductInput
- */
-export async function updateProductHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    const tenantId = getTenantId(req);
-    const { id } = req.params;
-    const body = req.body as UpdateProductInput;
-
-    if (!id) {
-      return res.status(400).json({ message: "id is verplicht in de URL" });
-    }
-
-    const updated = await updateProduct(tenantId, id, body);
-
-    if (!updated) {
-      return res.status(404).json({ message: "Product niet gevonden" });
-    }
-
-    res.json(updated);
-  } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
-  }
-}
-
-/**
- * DELETE /pos/core/products/:id
- * Soft delete (isActive = false)
- */
-export async function deleteProductHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+// PUT /pos/core/products/:id
+export async function updateProduct(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
     const { id } = req.params;
 
-    if (!id) {
-      return res.status(400).json({ message: "id is verplicht in de URL" });
+    const {
+      name,
+      priceIncl,
+      price,
+      vatRate,
+      categoryId,
+      revenueGroupId,
+    } = req.body as {
+      name?: string;
+      priceIncl?: string | number;
+      price?: string | number;
+      vatRate?: number;
+      categoryId?: string;
+      revenueGroupId?: string | null;
+    };
+
+    const existing = await prisma.product.findFirst({
+      where: { id, tenantId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    const deleted = await deleteProduct(tenantId, id);
+    const data: Prisma.ProductUncheckedUpdateInput = {};
 
-    if (!deleted) {
-      return res.status(404).json({ message: "Product niet gevonden" });
+    if (typeof name === "string" && name.length > 0) {
+      data.name = name;
     }
 
-    res.json({ success: true, product: deleted });
+    const rawPrice = priceIncl ?? price;
+    if (rawPrice !== undefined && rawPrice !== null && rawPrice !== "") {
+      data.priceIncl = new Prisma.Decimal(rawPrice.toString());
+    }
+
+    if (typeof vatRate === "number") {
+      data.vatRate = vatRate;
+    }
+
+    if (typeof categoryId === "string" && categoryId.length > 0) {
+      data.categoryId = categoryId;
+    }
+
+    if (typeof revenueGroupId === "string" || revenueGroupId === null) {
+      // alleen zetten als veld in schema bestaat
+      data.revenueGroupId = revenueGroupId as any;
+    }
+
+    const product = await prisma.product.update({
+      where: { id: existing.id },
+      data,
+      include: {
+        category: true,
+      },
+    });
+
+    res.json(product);
   } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
+    console.error("Error updateProduct", err);
+    res.status(500).json({ message: "Failed to update product" });
+  }
+}
+
+// DELETE /pos/core/products/:id
+export async function deleteProduct(req: Request, res: Response) {
+  try {
+    const tenantId = getTenantId(req);
+    const { id } = req.params;
+
+    const existing = await prisma.product.findFirst({
+      where: { id, tenantId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: "Product not found" });
     }
-    next(err);
+
+    await prisma.product.delete({
+      where: { id: existing.id },
+    });
+
+    res.status(204).send();
+  } catch (err) {
+    console.error("Error deleteProduct", err);
+    res.status(500).json({ message: "Failed to delete product" });
   }
 }

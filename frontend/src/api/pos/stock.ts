@@ -1,41 +1,17 @@
-export async function getStock() {
-  const res = await fetch("/pos/core/stock");
-  if (!res.ok) throw new Error("Failed to load stock");
-  return res.json();
-}
+// frontend/src/api/pos/stock.ts
+import {
+  fetchStock,
+  fetchStockHistory,
+  createStockPurchase,
+  createStockWaste,
+  createStockAdjust,
+} from "../../services/posService";
+import type { StockItem } from "../../services/posService";
 
-export async function getStockHistory() {
-  const res = await fetch("/pos/core/stock/history");
-  if (!res.ok) throw new Error("Failed to load stock history");
-  return res.json();
-}
+export type { StockItem };
 
-export async function postDelivery(payload: any) {
-  const res = await fetch("/pos/core/stock", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error("Failed to post delivery");
-  return res.json();
-}
-
-export async function postWaste(payload: any) {
-  const res = await fetch("/pos/core/stock/waste", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error("Failed to post waste");
-  return res.json();
-}
-
-export async function postAdjust(payload: any) {
-  const res = await fetch("/pos/core/stock/adjust", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error("Failed to post adjust");
-  return res.json();
-}
+export const apiListStock = fetchStock;
+export const apiStockHistory = fetchStockHistory;
+export const apiStockPurchase = createStockPurchase;
+export const apiStockWaste = createStockWaste;
+export const apiStockAdjust = createStockAdjust;

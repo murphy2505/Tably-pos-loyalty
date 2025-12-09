@@ -1,23 +1,21 @@
+// frontend/src/pages/pos/product-management/RevenueGroupsPage.tsx
 import React, { useEffect, useState } from "react";
-import "./../../../styles/pos/pos-management.css";
-import { fetchRevenueGroups, type PosRevenueGroup } from "@/api/pos/revenueGroups";
+import "../../../styles/pos/pos-management.css";
+
+import {
+  fetchRevenueGroups,
+  type RevenueGroup,
+} from "../../../api/pos/revenueGroups";
 
 const RevenueGroupsPage: React.FC = () => {
-  const [items, setItems] = useState<PosRevenueGroup[]>([]);
+  const [items, setItems] = useState<RevenueGroup[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      try {
-        setLoading(true);
-        const data = await fetchRevenueGroups();
-        setItems(Array.isArray(data) ? data : []);
-      } catch (e: any) {
-        setItems([]); // fallback indien endpoint ontbreekt
-      } finally {
-        setLoading(false);
-      }
+      const data = await fetchRevenueGroups();
+      setItems(data);
+      setLoading(false);
     })();
   }, []);
 
@@ -28,25 +26,18 @@ const RevenueGroupsPage: React.FC = () => {
         <button className="pm-btn-green">+ Nieuwe omzetgroep</button>
       </div>
 
-      <div className="pm-table">
-        {loading && <div className="pm-item">Laden…</div>}
-        {error && !loading && <div className="pm-item">Fout: {error}</div>}
-        {!loading && !error && (
-          <div className="pm-list">
-            {items.length === 0 && (
-              <div className="pm-item">
-                Nog geen omzetgroepen beschikbaar (backend endpoint ontbreekt nog).
-              </div>
-            )}
-            {items.map((g) => (
-              <div key={g.id} className="pm-item">
-                <span>{g.name}</span>
-                <span style={{ opacity: 0.7 }}>{g.color ?? ""}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {loading && <div className="pm-item">Laden…</div>}
+
+      {!loading && (
+        <div className="pm-list">
+          {items.map((g) => (
+            <div key={g.id} className="pm-item">
+              <span>{g.name}</span>
+              <span style={{ opacity: 0.7 }}>{g.color ?? ""}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

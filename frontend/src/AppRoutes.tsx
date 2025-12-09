@@ -13,6 +13,7 @@ import PosGiftcardsPage from "./pages/pos/PosGiftcardsPage";
 import PosPlanningPage from "./pages/pos/PosPlanningPage";
 import PosTablesPage from "./pages/pos/PosTablesPage";
 import KdsPage from "./pages/kds/KdsPage";
+import PosMenuItemsPage from "./pages/pos/PosMenuItemsPage"; // 👈 deze erbij
 
 // ⭐ Nieuwe POS product-management pages
 import ProductsOverviewPage from "./pages/pos/product-management/ProductsOverviewPage";
@@ -32,6 +33,9 @@ export function AppRoutes() {
 
         {/* Kassa */}
         <Route path="kassa" element={<PosPage />} />
+        
+        {/* Menukaart items (voor beheer) */}
+        <Route path="menu-items" element={<PosMenuItemsPage />} />
 
         {/* Productbeheer */}
         <Route path="products" element={<ProductsOverviewPage />} />

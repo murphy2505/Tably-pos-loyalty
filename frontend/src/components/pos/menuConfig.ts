@@ -46,7 +46,15 @@ export const posMenu: MenuItem[] = [
         label: "Menukaarten",
         to: "/pos/menus",
       },
-      // 🔥 Nieuw: modifiers-beheer onder Producten
+
+      // 🔥 Nieuw — hoort hier
+      {
+        key: "menu-items",
+        label: "Menu Items",
+        to: "/pos/menu-items",
+      },
+
+      // 🔥 Modifiers blijft ook onder Producten
       {
         key: "modifiers",
         label: "Modifiers",

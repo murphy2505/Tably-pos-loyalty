@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../../styles/pos/pos.css";
 import {
-  getProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  type Product,
-  type ProductVariant,
+  apiListProducts,
+  apiCreateProduct,
+  apiUpdateProduct,
+  apiDeleteProduct,
+  apiGetProduct,
 } from "../../api/pos/products";
+import type { Product, ProductVariant } from "../../api/pos/products";
 import {
-  getCategories,
+  apiListCategories as getCategories,
   type Category,
 } from "../../api/pos/categories";
 
@@ -76,7 +76,7 @@ const PosProductsPage: React.FC = () => {
       setLoadingCats(true);
       const [cats, prods] = await Promise.all([
         getCategories(),
-        getProducts(),
+        apiListProducts(),
       ]);
       setCategories(cats ?? []);
       setProducts(Array.isArray(prods) ? prods : []);
@@ -249,6 +249,10 @@ const PosProductsPage: React.FC = () => {
         tileColor: form.tileColor || null,
         tileIcon: form.tileIcon || null,
         active: form.active,
+        // minimale vereiste: top-level price (fallback naar eerste variant of 1)
+        price: Number.isFinite(form.variants?.[0]?.price)
+          ? Number(form.variants?.[0]?.price)
+          : 1,
         // nested varianten – de backend stub kan dit later gaan gebruiken
         variants: form.variants.map((v) => ({
           name: v.name.trim() || "Variant",
@@ -264,9 +268,9 @@ const PosProductsPage: React.FC = () => {
       };
 
       if (editMode === "create") {
-        await createProduct(payload);
+        await apiCreateProduct(payload);
       } else if (form.id) {
-        await updateProduct(form.id, payload);
+        await apiUpdateProduct(form.id, payload);
       }
 
       await loadInitial();

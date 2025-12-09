@@ -1,93 +1,63 @@
 // services/pos/src/app.ts
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 
 import healthRouter from "./routes/health";
-import kdsRoutes from "./routes/kdsRoutes";
+import ordersRouter from "./routes/orders";
+import kdsRouter from "./routes/kdsRoutes";
+import categoriesRouter from "./routes/categories";
+import productsRouter from "./routes/products";
+import variantsRouter from "./routes/variants";
+import stockRouter from "./routes/stock";
 import tablesRouter from "./routes/tables";
+import menusRouter from "./routes/menus";
+import menuItemsRouter from "./routes/menuItems";
 import authMiddleware from "./middleware/auth";
 
-// Core/beheer routes
-import categoriesRoutes from "./routes/categories";
-import productsRoutes from "./routes/products";
-import variantsRoutes from "./routes/variants";
-import stockRoutes from "./routes/stock";
-import ordersRoutes from "./routes/orders";
-import customersRouter from "./routes/customersRouter";
-import revenueGroupsRoutes from "./routes/revenueGroups";
-
-// Menukaarten
-// Update the import path if the file is named differently, e.g. menusRouter.ts or MenusRouter.ts
-import menusRouter from "./routes/menus";
-// Update the import path if the file is named differently, e.g. menuitems.ts or menuItemsRouter.ts
-import menuItemsRouter from "./routes/menuItems";
-
-// Modifiers (sauzen / extra's)
-import modifiersRouter from "./routes/modifiers";
+dotenv.config();
 
 const app = express();
 
+// ====== MIDDLEWARE ======
 app.use(cors());
 app.use(express.json());
 
-/**
- * Public / basis POS endpoints
- */
+// ====== HEALTH ======
 app.use("/pos/health", healthRouter);
-app.use("/pos/kds", kdsRoutes);
 
-// Orders (POS / Kassa)
-app.use("/pos/orders", ordersRoutes);
+// ====== PUBLIC POS ENDPOINTS (orders/kds) ======
+app.use("/pos/orders", ordersRouter);
+app.use("/pos/kds", kdsRouter);
 
-/**
- * Protected / core beheer endpoints
- * (achter authMiddleware)
- */
-
-// Tafelbeheer
+// ====== PROTECTED CORE API (met tenant headers) ======
+app.use("/pos/core/categories", authMiddleware, categoriesRouter);
+app.use("/pos/core/products", authMiddleware, productsRouter);
+app.use("/pos/core/variants", authMiddleware, variantsRouter);
+app.use("/pos/core/stock", authMiddleware, stockRouter);
 app.use("/pos/tables", authMiddleware, tablesRouter);
 
-// Categorieën
-app.use("/pos/core/categories", authMiddleware, categoriesRoutes);
-
-// Producten (core + alias voor POS UI)
-app.use("/pos/core/products", authMiddleware, productsRoutes);
-app.use("/pos/products", authMiddleware, productsRoutes);
-
-// Variants (porties)
-app.use("/pos/core/variants", authMiddleware, variantsRoutes);
-app.use("/pos/variants", authMiddleware, variantsRoutes);
-
-// Voorraad
-app.use("/pos/core/stock", authMiddleware, stockRoutes);
-
-// Omzetgroepen
-app.use("/pos/core/revenue-groups", authMiddleware, revenueGroupsRoutes);
-
-// Modifiers (groepen + opties)
-app.use("/pos/core/modifiers", authMiddleware, modifiersRouter);
-
-/**
- * Menukaarten — beheer
- *
- * Full CRUD in het dashboard:
- * - /pos/core/menus
- * - /pos/core/menu-items
- */
+// Menus and Menu Items core endpoints
 app.use("/pos/core/menus", authMiddleware, menusRouter);
 app.use("/pos/core/menu-items", authMiddleware, menuItemsRouter);
 
-/**
- * Menukaarten — POS UI (alleen lezen)
- * /pos/menus → lijst menukaarten voor POS
- * /pos/menu-items → items per menukaart
- */
-app.use("/pos/menus", authMiddleware, menusRouter);
-app.use("/pos/menu-items", authMiddleware, menuItemsRouter);
+// ====== JSON ERROR HANDLERS ======
+app.use(
+  (err: any, _req: Request, res: Response, _next: NextFunction) => {
+    console.error("Unhandled error in POS service:", err);
+    if (res.headersSent) {
+      return;
+    }
+    res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+);
 
-/**
- * POS-klanten endpoint (single source of truth in loyalty-service)
- */
-app.use("/pos/customers", authMiddleware, customersRouter);
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({
+    error: "Not Found",
+  });
+});
 
 export default app;

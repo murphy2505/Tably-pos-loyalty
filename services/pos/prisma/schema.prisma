@@ -27,52 +27,40 @@ model RevenueGroup {
 }
 
 model Category {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   tenantId  String
   name      String
   color     String?
-  sortOrder Int     @default(0)
-  isActive  Boolean @default(true)
-
-  products Product[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([tenantId, sortOrder])
+  // 🔗 back-relatie naar Product (dit miste en gaf P1012)
+  products Product[]
+
+  // 🔗 composite unique zodat seed.ts where: { tenantId_name: ... } werkt
+  @@unique([tenantId, name], name: "Category_tenantId_name_key")
 }
 
 model Product {
-  id         String  @id @default(cuid())
-  tenantId   String
-  locationId String?
+  id       String @id @default(cuid())
+  tenantId String
+  name     String
 
-  name        String
-  description String?
-
+  // 🔗 relatie naar Category
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
-  revenueGroupId String?
-  revenueGroup   RevenueGroup? @relation(fields: [revenueGroupId], references: [id])
+  // 💰 veldnamen die je frontend en seed.ts verwachten
+  priceIncl Decimal @db.Decimal(10, 2)
+  vatRate   Int
 
-  isActive     Boolean @default(true)
-  isPopular    Boolean @default(false)
-  isBestSeller Boolean @default(false)
-  isNew        Boolean @default(false)
-
-  allowDiscount Boolean @default(true)
-  printGroup    String?
-
-  variants    ProductVariant[]
-  ingredients ProductIngredient[]
-  menuItems   MenuItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([tenantId, categoryId])
-  @@index([tenantId, revenueGroupId])
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  RevenueGroup      RevenueGroup?       @relation(fields: [revenueGroupId], references: [id])
+  revenueGroupId    String?
+  ProductVariant    ProductVariant[]
+  ProductIngredient ProductIngredient[]
+  MenuItem          MenuItem[]
 }
 
 model ProductVariant {
@@ -90,6 +78,9 @@ model ProductVariant {
 
   sortOrder Int     @default(0)
   isActive  Boolean @default(true)
+
+  // 👇 terugrelatie naar MenuItem
+  menuItems MenuItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -177,22 +168,24 @@ model MenuItem {
   id       String @id @default(cuid())
   tenantId String
 
-  menuId String
-  menu   Menu   @relation(fields: [menuId], references: [id])
+  menuId    String
+  sectionId String? // 👈 koppeling (optioneel) naar MenuSection
+  productId String
+  variantId String?
 
-  sectionId String?
-  section   MenuSection? @relation(fields: [sectionId], references: [id])
+  label      String? // optioneel: override naam op tegel
+  shortLabel String? // optioneel: kort label op kleine tegels
+  sortOrder  Int     @default(0)
+  isVisible  Boolean @default(true)
+  isFavorite Boolean @default(false)
 
-  productId String?
-  product   Product? @relation(fields: [productId], references: [id])
-
-  sortOrder Int     @default(0)
-  isActive  Boolean @default(true)
+  menu    Menu            @relation(fields: [menuId], references: [id])
+  section MenuSection?    @relation(fields: [sectionId], references: [id])
+  product Product         @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([tenantId, menuId])
-  @@index([tenantId, sectionId])
-  @@index([tenantId, productId])
+  @@index([tenantId, menuId, sectionId, sortOrder])
 }

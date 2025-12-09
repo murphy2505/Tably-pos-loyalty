@@ -11,17 +11,17 @@ const api = axios.create({
 
 // POS (kassa) – read-only
 export async function apiListMenusPOS() {
-  const res = await api.get("/pos/menus");
+  const res = await api.get("/pos-api/menus");
   return res.data;
 }
 
 export async function apiGetMenuPOS(id: string) {
-  const res = await api.get(`/pos/menus/${id}`);
+  const res = await api.get(`/pos-api/menus/${id}`);
   return res.data;
 }
 
 export async function apiListMenuItemsPOS(menuId: string) {
-  const res = await api.get("/pos/menu-items", {
+  const res = await api.get("/pos-api/menu-items", {
     params: { menuId },
   });
   return res.data;

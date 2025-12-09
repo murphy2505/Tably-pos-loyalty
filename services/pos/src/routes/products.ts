@@ -1,33 +1,28 @@
 // services/pos/src/routes/products.ts
-
 import { Router } from "express";
 import {
-  listProductsHandler,
-  getProductHandler,
-  createProductHandler,
-  updateProductHandler,
-  deleteProductHandler,
+  getAllProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 } from "../controllers/productController";
 
 const router = Router();
 
-// In app.ts verwacht je iets als:
-// app.use("/pos/core/products", productsRouter);
-// Daarom zijn de paths hier relatief (" / " en "/:id").
-
 // GET /pos/core/products
-router.get("/", listProductsHandler);
+router.get("/", getAllProducts);
 
 // GET /pos/core/products/:id
-router.get("/:id", getProductHandler);
+router.get("/:id", getProductById);
 
 // POST /pos/core/products
-router.post("/", createProductHandler);
+router.post("/", createProduct);
 
 // PUT /pos/core/products/:id
-router.put("/:id", updateProductHandler);
+router.put("/:id", updateProduct);
 
 // DELETE /pos/core/products/:id
-router.delete("/:id", deleteProductHandler);
+router.delete("/:id", deleteProduct);
 
 export default router;

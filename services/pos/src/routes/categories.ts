@@ -1,20 +1,24 @@
 // services/pos/src/routes/categories.ts
-
 import { Router } from "express";
-import * as categoriesController from "../controllers/categoriesController";
+import {
+  listCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../controllers/categoriesController";
 
 const router = Router();
 
-// GET /pos/core/categories  (in app.ts gemount als: app.use("/pos/core/categories", router))
-router.get("/", categoriesController.listCategories);
+// GET /pos/core/categories
+router.get("/", listCategories);
 
 // POST /pos/core/categories
-router.post("/", categoriesController.createCategory);
+router.post("/", createCategory);
 
 // PUT /pos/core/categories/:id
-router.put("/:id", categoriesController.updateCategory);
+router.put("/:id", updateCategory);
 
 // DELETE /pos/core/categories/:id
-router.delete("/:id", categoriesController.deleteCategory);
+router.delete("/:id", deleteCategory);
 
 export default router;
