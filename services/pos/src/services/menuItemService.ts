@@ -26,9 +26,11 @@ export async function listMenuItems(tenantId: string, menuId: string) {
 export type CreateMenuItemInput = {
   menuId: string;
   sectionId?: string | null;
-  productId?: string | null;
+  productId: string;
+  variantId?: string | null;
   sortOrder?: number;
-  isActive?: boolean;
+  isVisible?: boolean;
+  isFavorite?: boolean;
 };
 
 /**
@@ -55,9 +57,11 @@ export async function createMenuItem(
       tenantId,
       menuId: data.menuId,
       sectionId: data.sectionId ?? null,
-      productId: data.productId ?? null,
+      productId: data.productId,
+      variantId: data.variantId ?? null,
       sortOrder,
-      isActive: data.isActive ?? true,
+      isVisible: data.isVisible ?? true,
+      isFavorite: data.isFavorite ?? false,
     },
   });
 }
@@ -67,9 +71,11 @@ export async function createMenuItem(
  */
 export type UpdateMenuItemInput = {
   sectionId?: string | null;
-  productId?: string | null;
+  productId?: string; // required column in schema; update only accepts string
+  variantId?: string | null;
   sortOrder?: number;
-  isActive?: boolean;
+  isVisible?: boolean;
+  isFavorite?: boolean;
 };
 
 /**
@@ -89,16 +95,22 @@ export async function updateMenuItem(
   if (data.productId !== undefined) {
     updateData.productId = data.productId;
   }
+  if (data.variantId !== undefined) {
+    updateData.variantId = data.variantId;
+  }
   if (data.sortOrder !== undefined) {
     updateData.sortOrder = data.sortOrder;
   }
-  if (data.isActive !== undefined) {
-    updateData.isActive = data.isActive;
+  if (data.isVisible !== undefined) {
+    updateData.isVisible = data.isVisible;
+  }
+  if (data.isFavorite !== undefined) {
+    updateData.isFavorite = data.isFavorite;
   }
 
   return prisma.menuItem.updateMany({
     where: { id, tenantId },
-    data: updateData,
+    data: updateData as any,
   });
 }
 

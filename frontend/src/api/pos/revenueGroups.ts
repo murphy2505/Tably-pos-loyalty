@@ -1,3 +1,5 @@
+import http from "../../services/http";
+
 export type RevenueGroup = {
   id: string;
   name: string;
@@ -6,73 +8,31 @@ export type RevenueGroup = {
   updatedAt?: string;
 };
 
-const BASE_URL = "/pos/core/revenue-groups";
-
-const headers = {
-  "Content-Type": "application/json",
-  "x-tenant-id": "demo",
-};
-
-async function handleRes(res: Response) {
-  if (!res.ok) {
-    let msg = `Request failed (${res.status})`;
-    try {
-      const data = await res.json();
-      if (data?.error) msg = data.error;
-    } catch {
-      // ignore
-    }
-    throw new Error(msg);
-  }
-  if (res.status === 204) return null;
-  return res.json();
+export async function apiListRevenueGroups(): Promise<RevenueGroup[]> {
+  const res = await http.get("/pos-api/core/revenue-groups");
+  return res.data;
 }
 
-export async function getRevenueGroups(): Promise<RevenueGroup[]> {
-  const res = await fetch(BASE_URL);
-  return handleRes(res);
+export async function apiCreateRevenueGroup(payload: { name: string; color?: string | null }): Promise<RevenueGroup> {
+  const res = await http.post("/pos-api/core/revenue-groups", payload);
+  return res.data;
 }
 
-export async function createRevenueGroup(payload: {
-  name: string;
-  color?: string;
-}): Promise<RevenueGroup> {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(payload),
-  });
-  return handleRes(res);
+export async function apiUpdateRevenueGroup(id: string, payload: Partial<RevenueGroup>): Promise<RevenueGroup> {
+  const res = await http.put(`/pos-api/core/revenue-groups/${id}`, payload);
+  return res.data;
 }
 
-export async function updateRevenueGroup(
-  id: string,
-  payload: { name?: string; color?: string | null }
-): Promise<RevenueGroup> {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers,
-    body: JSON.stringify(payload),
-  });
-  return handleRes(res);
+export async function apiDeleteRevenueGroup(id: string): Promise<void> {
+  await http.delete(`/pos-api/core/revenue-groups/${id}`);
 }
 
-export async function deleteRevenueGroup(id: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-  await handleRes(res);
-}
+// Backwards-compat alias exports for existing pages expecting old names
+export const getRevenueGroups = apiListRevenueGroups;
+export const createRevenueGroup = apiCreateRevenueGroup;
+export const updateRevenueGroup = apiUpdateRevenueGroup;
+export const deleteRevenueGroup = apiDeleteRevenueGroup;
 
-export interface PosRevenueGroup {
-  id: string;
-  name: string;
-  color?: string | null;
-}
-
-// TODO: vervang dit pad zodra het backend-endpoint beschikbaar is.
 export async function fetchRevenueGroups(): Promise<RevenueGroup[]> {
-  const res = await fetch("/pos/core/revenue-groups", { headers });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return apiListRevenueGroups();
 }

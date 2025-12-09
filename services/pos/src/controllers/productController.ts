@@ -45,6 +45,7 @@ export async function getProductById(req: Request, res: Response) {
       where: { id, tenantId },
       include: {
         category: true,
+        ProductVariant: true,
       },
     });
 

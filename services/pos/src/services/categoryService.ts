@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { z } from "zod";
 
 // In-memory category service (compile fix) – vervangt foutieve customer code
 type Category = {

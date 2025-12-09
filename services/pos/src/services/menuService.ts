@@ -108,11 +108,32 @@ export async function createMenu(tenantId: string, data: CreateMenuInput) {
       ? data.sortOrder
       : (maxSort._max.sortOrder ?? 0) + 1;
 
+  // Ensure slug exists, is slug-safe, and unique globally (schema has @unique on slug)
+  const base = (data.slug || data.name)
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "") || "menu";
+
+  const existing = await prisma.menu.findMany({
+    where: { slug: { startsWith: base } },
+    select: { slug: true },
+  });
+  const taken = new Set(existing.map((m) => m.slug));
+  let slug = base;
+  if (taken.has(slug)) {
+    let i = 2;
+    while (taken.has(`${base}-${i}`)) i++;
+    slug = `${base}-${i}`;
+  }
+
   return prisma.menu.create({
     data: {
       tenantId,
       name: data.name.trim(),
-      slug: data.slug.trim(),
+      slug,
 
       description: data.description ?? null,
 

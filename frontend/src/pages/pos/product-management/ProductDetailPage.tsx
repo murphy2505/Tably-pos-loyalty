@@ -39,7 +39,7 @@ const ProductDetailPage: React.FC = () => {
       <div className="pm-table">
         Variants:
         <div className="pm-list">
-          {product.variants?.map((v) => (
+          {product.variants?.map((v: any) => (
             <div key={v.id} className="pm-item">
               {v.name} — €{v.price.toFixed(2)}
             </div>

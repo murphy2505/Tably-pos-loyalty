@@ -1,5 +1,5 @@
 // frontend/src/pages/pos/product-management/ProductsOverviewPage.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../../styles/pos/pos-management.css";
 
 import {
@@ -73,7 +73,7 @@ const ProductsOverviewPage: React.FC = () => {
 
   const openEdit = (p: PosProduct) => {
     setEditMode("edit");
-    setForm({ id: p.id, name: p.name, price: String(p.variants?.[0]?.price ?? 0), categoryId: p.categoryId });
+    setForm({ id: p.id, name: p.name, price: String(p.variants?.[0]?.price ?? 0), categoryId: p.categoryId ?? "" });
     setEditOpen(true);
   };
 

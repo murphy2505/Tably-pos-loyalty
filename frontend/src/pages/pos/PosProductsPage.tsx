@@ -5,15 +5,24 @@ import {
   apiCreateProduct,
   apiUpdateProduct,
   apiDeleteProduct,
-  apiGetProduct,
 } from "../../api/pos/products";
-import type { Product, ProductVariant } from "../../api/pos/products";
+import type { Product } from "../../api/pos/products";
 import {
   apiListCategories as getCategories,
   type Category,
 } from "../../api/pos/categories";
 
 type EditMode = "create" | "edit";
+
+type UiProductVariant = {
+  id?: string;
+  name: string;
+  price: number;
+  costPrice: number | null;
+  sku: string | null;
+  pluCode: string | null;
+  active: boolean;
+};
 
 type ProductFormState = {
   id?: string;
@@ -25,7 +34,7 @@ type ProductFormState = {
   tileColor: string;
   tileIcon: string;
   active: boolean;
-  variants: ProductVariant[];
+  variants: UiProductVariant[];
 };
 
 const DEFAULT_VAT = 9;
@@ -56,7 +65,7 @@ const PosProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingCats, setLoadingCats] = useState(true);
+  // const [loadingCats, setLoadingCats] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
@@ -73,7 +82,7 @@ const PosProductsPage: React.FC = () => {
       setError(null);
 
       // categorieën eerst ophalen voor dropdown
-      setLoadingCats(true);
+      // setLoadingCats(true);
       const [cats, prods] = await Promise.all([
         getCategories(),
         apiListProducts(),
@@ -85,7 +94,7 @@ const PosProductsPage: React.FC = () => {
       setError(e.message || "Kon producten/categorieën niet laden");
     } finally {
       setLoading(false);
-      setLoadingCats(false);
+      // setLoadingCats(false);
     }
   };
 
@@ -115,7 +124,7 @@ const PosProductsPage: React.FC = () => {
         " " +
         (p.shortLabel || "").toLowerCase() +
         " " +
-        (categoryMap.get(p.categoryId) || "").toLowerCase();
+        (categoryMap.get(p.categoryId ?? "") || "").toLowerCase();
 
       return text.includes(q);
     });
@@ -138,14 +147,14 @@ const PosProductsPage: React.FC = () => {
       name: p.name,
       shortLabel: p.shortLabel ?? "",
       description: p.description ?? "",
-      categoryId: p.categoryId,
+      categoryId: p.categoryId ?? "",
       vatRate: p.vatRate ?? DEFAULT_VAT,
       tileColor: p.tileColor ?? "",
       tileIcon: p.tileIcon ?? "",
       active: p.active,
       variants:
         p.variants && p.variants.length
-          ? p.variants.map((v) => ({
+          ? p.variants.map((v: any) => ({
               id: v.id,
               name: v.name,
               price: v.price,
@@ -178,7 +187,7 @@ const PosProductsPage: React.FC = () => {
     setForm((prev) => (prev ? { ...prev, ...patch } : prev));
   };
 
-  const updateVariant = (index: number, patch: Partial<ProductVariant>) => {
+  const updateVariant = (index: number, patch: Partial<UiProductVariant>) => {
     setForm((prev) => {
       if (!prev) return prev;
       const variants = [...prev.variants];
@@ -219,7 +228,7 @@ const PosProductsPage: React.FC = () => {
     if (!confirm(`Product "${p.name}" verwijderen?`)) return;
 
     try {
-      await deleteProduct(p.id);
+      await apiDeleteProduct(p.id);
       await loadInitial();
     } catch (e: any) {
       alert(e.message || "Kon product niet verwijderen");
@@ -394,11 +403,11 @@ const PosProductsPage: React.FC = () => {
                       </div>
 
                       <div className="pos-product-category">
-                        {categoryMap.get(p.categoryId) || "Geen categorie"}
+                        {categoryMap.get(p.categoryId ?? "") || "Geen categorie"}
                       </div>
 
                       <div className="pos-product-variants">
-                        {p.variants.map((v) => (
+                        {p.variants.map((v: any) => (
                           <div key={v.id ?? v.name}>
                             {v.name} — {formatPrice(v.price)}
                           </div>

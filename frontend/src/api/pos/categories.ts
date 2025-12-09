@@ -28,3 +28,9 @@ export async function apiDeleteCategory(id: string) {
   const res = await http.delete(`/pos-api/core/categories/${id}`);
   return res.data;
 }
+
+// Backwards-compat alias exports for existing pages
+export const getCategories = apiListCategories;
+export const createCategory = apiCreateCategory;
+export const updateCategory = apiUpdateCategory;
+export const deleteCategory = apiDeleteCategory;

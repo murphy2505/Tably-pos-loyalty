@@ -48,7 +48,7 @@ const VariantsPage: React.FC = () => {
 
       <div className="pm-list">
         {product.variants?.length ? (
-          product.variants.map((v) => (
+          product.variants.map((v: any) => (
             <div key={v.id} className="pm-item">
               <span>{v.name}</span>
               <span>€{v.price.toFixed(2)}</span>

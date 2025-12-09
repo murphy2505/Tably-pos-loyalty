@@ -7,21 +7,11 @@ import { prisma } from "../db/prisma";
 // =======================
 
 export type CreateProductInput = {
-  locationId?: string | null;
-
   name: string;
-  description?: string | null;
-
   categoryId: string;
   revenueGroupId?: string | null;
-
-  isActive?: boolean;
-  isPopular?: boolean;
-  isBestSeller?: boolean;
-  isNew?: boolean;
-
-  allowDiscount?: boolean;
-  printGroup?: string | null;
+  priceIncl?: number;
+  vatRate?: number;
 };
 
 export type UpdateProductInput = Partial<CreateProductInput>;
@@ -52,15 +42,13 @@ export async function listProducts(
   tenantId: string,
   options?: { includeInactive?: boolean }
 ) {
-  const { includeInactive = false } = options ?? {};
-
   return prisma.product.findMany({
-    where: baseWhere(tenantId, includeInactive ? {} : { isActive: true }),
+    where: baseWhere(tenantId),
     orderBy: { name: "asc" },
     include: {
       category: true,
-      revenueGroup: true,
-      variants: true,
+      RevenueGroup: true,
+      ProductVariant: true,
     },
   });
 }
@@ -73,8 +61,8 @@ export async function getProductById(tenantId: string, id: string) {
     where: baseWhere(tenantId, { id }),
     include: {
       category: true,
-      revenueGroup: true,
-      variants: true,
+      RevenueGroup: true,
+      ProductVariant: true,
     },
   });
 }
@@ -89,21 +77,11 @@ export async function createProduct(
   return prisma.product.create({
     data: {
       tenantId,
-      locationId: data.locationId ?? null,
-
       name: data.name.trim(),
-      description: data.description ?? null,
-
       categoryId: data.categoryId,
       revenueGroupId: data.revenueGroupId ?? null,
-
-      isActive: data.isActive ?? true,
-      isPopular: data.isPopular ?? false,
-      isBestSeller: data.isBestSeller ?? false,
-      isNew: data.isNew ?? false,
-
-      allowDiscount: data.allowDiscount ?? true,
-      printGroup: data.printGroup ?? null,
+      priceIncl: (data.priceIncl ?? 0) as any,
+      vatRate: Math.trunc(data.vatRate ?? 0),
     },
   });
 }
@@ -128,32 +106,15 @@ export async function updateProduct(
   return prisma.product.update({
     where: { id },
     data: {
-      // alleen invullen als ze aanwezig zijn in data
-      ...(data.locationId !== undefined && {
-        locationId: data.locationId,
-      }),
       ...(data.name !== undefined && { name: data.name.trim() }),
-      ...(data.description !== undefined && {
-        description: data.description,
-      }),
       ...(data.categoryId !== undefined && {
         categoryId: data.categoryId,
       }),
       ...(data.revenueGroupId !== undefined && {
         revenueGroupId: data.revenueGroupId,
       }),
-      ...(data.isActive !== undefined && { isActive: data.isActive }),
-      ...(data.isPopular !== undefined && { isPopular: data.isPopular }),
-      ...(data.isBestSeller !== undefined && {
-        isBestSeller: data.isBestSeller,
-      }),
-      ...(data.isNew !== undefined && { isNew: data.isNew }),
-      ...(data.allowDiscount !== undefined && {
-        allowDiscount: data.allowDiscount,
-      }),
-      ...(data.printGroup !== undefined && {
-        printGroup: data.printGroup,
-      }),
+      ...(data.priceIncl !== undefined && { priceIncl: data.priceIncl as any }),
+      ...(data.vatRate !== undefined && { vatRate: Math.trunc(data.vatRate as number) }),
     },
   });
 }
@@ -171,10 +132,6 @@ export async function deleteProduct(tenantId: string, id: string) {
     return null;
   }
 
-  return prisma.product.update({
-    where: { id },
-    data: {
-      isActive: false,
-    },
-  });
+  await prisma.product.deleteMany({ where: { id, tenantId } });
+  return existing;
 }

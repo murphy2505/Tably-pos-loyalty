@@ -1,9 +1,4 @@
-import axios from "axios";
-
-// Basis axios instance – proxy in vite.config stuurt /pos naar backend
-const api = axios.create({
-  baseURL: "/", // alles gaat via Vite proxy
-});
+import http from "./http";
 
 // ----------------------------
 // Menukaarten API
@@ -11,17 +6,17 @@ const api = axios.create({
 
 // POS (kassa) – read-only
 export async function apiListMenusPOS() {
-  const res = await api.get("/pos-api/menus");
+  const res = await http.get("/pos-api/core/menus");
   return res.data;
 }
 
 export async function apiGetMenuPOS(id: string) {
-  const res = await api.get(`/pos-api/menus/${id}`);
+  const res = await http.get(`/pos-api/core/menus/${id}`);
   return res.data;
 }
 
 export async function apiListMenuItemsPOS(menuId: string) {
-  const res = await api.get("/pos-api/menu-items", {
+  const res = await http.get("/pos-api/core/menu-items", {
     params: { menuId },
   });
   return res.data;
@@ -29,55 +24,55 @@ export async function apiListMenuItemsPOS(menuId: string) {
 
 // CORE (dashboard / beheer)
 export async function apiListMenus() {
-  const res = await api.get("/pos-api/menus");
+  const res = await http.get("/pos-api/core/menus");
   return res.data;
 }
 
 export async function apiGetMenu(id: string) {
-  const res = await api.get(`/pos-api/menus/${id}`);
+  const res = await http.get(`/pos-api/core/menus/${id}`);
   return res.data;
 }
 
 export async function apiCreateMenu(data: any) {
-  const res = await api.post(`/pos-api/core/menus`, data);
+  const res = await http.post(`/pos-api/core/menus`, data);
   return res.data;
 }
 
 export async function apiUpdateMenu(id: string, data: any) {
-  const res = await api.put(`/pos-api/core/menus/${id}`, data);
+  const res = await http.put(`/pos-api/core/menus/${id}`, data);
   return res.data;
 }
 
 export async function apiDeleteMenu(id: string) {
-  const res = await api.delete(`/pos-api/core/menus/${id}`);
+  const res = await http.delete(`/pos-api/core/menus/${id}`);
   return res.data;
 }
 
 // Menu-items beheer
 export async function apiListMenuItems(menuId: string) {
-  const res = await api.get("/pos-api/core/menu-items", {
+  const res = await http.get("/pos-api/core/menu-items", {
     params: { menuId },
   });
   return res.data;
 }
 
 export async function apiCreateMenuItem(data: any) {
-  const res = await api.post(`/pos-api/core/menu-items`, data);
+  const res = await http.post(`/pos-api/core/menu-items`, data);
   return res.data;
 }
 
 export async function apiUpdateMenuItem(id: string, data: any) {
-  const res = await api.put(`/pos-api/core/menu-items/${id}`, data);
+  const res = await http.put(`/pos-api/core/menu-items/${id}`, data);
   return res.data;
 }
 
 export async function apiDeleteMenuItem(id: string) {
-  const res = await api.delete(`/pos-api/core/menu-items/${id}`);
+  const res = await http.delete(`/pos-api/core/menu-items/${id}`);
   return res.data;
 }
 
 export async function apiReorderMenuItems(menuId: string, orderedIds: string[]) {
-  const res = await api.post(`/pos-api/core/menu-items/reorder`, {
+  const res = await http.post(`/pos-api/core/menu-items/reorder`, {
     menuId,
     orderedIds,
   });
@@ -91,43 +86,43 @@ export async function apiReorderMenuItems(menuId: string, orderedIds: string[]) 
 //
 
 export async function listModifierGroups() {
-  const res = await api.get(`/pos-api/core/modifiers/groups`);
+  const res = await http.get(`/pos-api/core/modifiers/groups`);
   return res.data;
 }
 
 export async function getModifierGroup(id: string) {
-  const res = await api.get(`/pos-api/core/modifiers/groups/${id}`);
+  const res = await http.get(`/pos-api/core/modifiers/groups/${id}`);
   return res.data;
 }
 
 export async function createModifierGroup(data: any) {
-  const res = await api.post(`/pos-api/core/modifiers/groups`, data);
+  const res = await http.post(`/pos-api/core/modifiers/groups`, data);
   return res.data;
 }
 
 export async function updateModifierGroup(id: string, data: any) {
-  const res = await api.put(`/pos-api/core/modifiers/groups/${id}`, data);
+  const res = await http.put(`/pos-api/core/modifiers/groups/${id}`, data);
   return res.data;
 }
 
 export async function deleteModifierGroup(id: string) {
-  const res = await api.delete(`/pos-api/core/modifiers/groups/${id}`);
+  const res = await http.delete(`/pos-api/core/modifiers/groups/${id}`);
   return res.data;
 }
 
 // ---- Options ----
 
 export async function createModifierOption(groupId: string, data: any) {
-  const res = await api.post(`/pos-api/core/modifiers/groups/${groupId}/options`, data);
+  const res = await http.post(`/pos-api/core/modifiers/groups/${groupId}/options`, data);
   return res.data;
 }
 
 export async function updateModifierOption(id: string, data: any) {
-  const res = await api.put(`/pos-api/core/modifiers/options/${id}`, data);
+  const res = await http.put(`/pos-api/core/modifiers/options/${id}`, data);
   return res.data;
 }
 
 export async function deleteModifierOption(id: string) {
-  const res = await api.delete(`/pos-api/core/modifiers/options/${id}`);
+  const res = await http.delete(`/pos-api/core/modifiers/options/${id}`);
   return res.data;
 }

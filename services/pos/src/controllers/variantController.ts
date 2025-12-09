@@ -1,219 +1,93 @@
-// services/pos/src/controllers/variantController.ts
-
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import {
-  listVariants,
+  listVariantsByProduct,
   getVariantById,
   createVariant,
   updateVariant,
   deleteVariant,
-  CreateVariantInput,
-  UpdateVariantInput,
-} from "../services/variantService";
+} from "../services/variantsService";
 
-/**
- * Haal tenantId uit req. We proberen eerst req.tenantId (middleware),
- * en vallen anders terug op de x-tenant-id header.
- */
 function getTenantId(req: Request): string {
-  const fromReq = (req as any).tenantId;
-  const fromHeader = req.headers["x-tenant-id"];
-
-  const tenantId =
-    typeof fromReq === "string"
-      ? fromReq
-      : typeof fromHeader === "string"
-      ? fromHeader
-      : null;
-
-  if (!tenantId) {
+  const tenantId = req.header("x-tenant-id");
+  if (!tenantId || typeof tenantId !== "string") {
     throw new Error("Missing tenantId");
   }
-
   return tenantId;
 }
 
-/**
- * GET /pos/core/variants
- * Optioneel:
- *  - ?productId=...
- *  - ?includeInactive=true
- */
-export async function listVariantsHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export async function listVariantsHandler(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
-    const productId = req.query.productId
-      ? String(req.query.productId)
-      : undefined;
-    const includeInactive =
-      String(req.query.includeInactive).toLowerCase() === "true";
-
-    const variants = await listVariants(tenantId, {
-      productId,
-      includeInactive,
-    });
-
+    const { productId } = req.query as { productId?: string };
+    if (!productId) {
+      return res.status(400).json({ message: "productId is required" });
+    }
+    const variants = await listVariantsByProduct(tenantId, productId);
     res.json(variants);
-  } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
+  } catch (err: any) {
+    console.error("listVariantsHandler error", err);
+    res.status(500).json({ message: err.message || "Failed to list variants" });
   }
 }
 
-/**
- * GET /pos/core/variants/:id
- */
-export async function getVariantHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export async function getVariantHandler(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
     const { id } = req.params;
-
-    if (!id) {
-      return res.status(400).json({ message: "id is verplicht in de URL" });
-    }
-
     const variant = await getVariantById(tenantId, id);
-
-    if (!variant) {
-      return res.status(404).json({ message: "Variant niet gevonden" });
-    }
-
+    if (!variant) return res.status(404).json({ message: "Variant not found" });
     res.json(variant);
-  } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
+  } catch (err: any) {
+    console.error("getVariantHandler error", err);
+    res.status(500).json({ message: err.message || "Failed to get variant" });
   }
 }
 
-/**
- * POST /pos/core/variants
- * Body: CreateVariantInput
- */
-export async function createVariantHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export async function createVariantHandler(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
-    const body = req.body as CreateVariantInput;
-
-    if (!body?.productId || typeof body.productId !== "string") {
-      return res.status(400).json({ message: "productId is verplicht" });
+    const { productId, name, sku, priceInclVat, vatRate, sortOrder, isActive } = req.body || {};
+    if (!productId || !name || priceInclVat === undefined || vatRate === undefined) {
+      return res.status(400).json({ message: "productId, name, priceInclVat and vatRate are required" });
     }
-
-    if (!body?.name || typeof body.name !== "string") {
-      return res.status(400).json({ message: "name is verplicht" });
-    }
-
-    if (
-      body.priceInclVat === undefined ||
-      body.vatRate === undefined ||
-      (typeof body.priceInclVat !== "number" &&
-        typeof body.priceInclVat !== "string") ||
-      (typeof body.vatRate !== "number" &&
-        typeof body.vatRate !== "string")
-    ) {
-      return res.status(400).json({
-        message:
-          "priceInclVat en vatRate zijn verplicht en moeten number of string zijn",
-      });
-    }
-
-    const variant = await createVariant(tenantId, body);
-
-    res.status(201).json(variant);
-  } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
+    const created = await createVariant(tenantId, {
+      productId,
+      name,
+      sku,
+      priceInclVat,
+      vatRate,
+      sortOrder,
+      isActive,
+    });
+    res.status(201).json(created);
+  } catch (err: any) {
+    console.error("createVariantHandler error", err);
+    res.status(500).json({ message: err.message || "Failed to create variant" });
   }
 }
 
-/**
- * PUT /pos/core/variants/:id
- * Body: UpdateVariantInput
- */
-export async function updateVariantHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export async function updateVariantHandler(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
     const { id } = req.params;
-    const body = req.body as UpdateVariantInput;
-
-    if (!id) {
-      return res.status(400).json({ message: "id is verplicht in de URL" });
-    }
-
-    const updated = await updateVariant(tenantId, id, body);
-
-    if (!updated) {
-      return res.status(404).json({ message: "Variant niet gevonden" });
-    }
-
+    const updated = await updateVariant(tenantId, id, req.body || {});
     res.json(updated);
-  } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
+  } catch (err: any) {
+    console.error("updateVariantHandler error", err);
+    if (err.message === "Variant not found") return res.status(404).json({ message: err.message });
+    res.status(500).json({ message: err.message || "Failed to update variant" });
   }
 }
 
-/**
- * DELETE /pos/core/variants/:id
- * Soft delete (isActive = false)
- */
-export async function deleteVariantHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export async function deleteVariantHandler(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
     const { id } = req.params;
-
-    if (!id) {
-      return res.status(400).json({ message: "id is verplicht in de URL" });
-    }
-
-    const deleted = await deleteVariant(tenantId, id);
-
-    if (!deleted) {
-      return res.status(404).json({ message: "Variant niet gevonden" });
-    }
-
-    res.json({ success: true, variant: deleted });
-  } catch (err) {
-    if ((err as Error).message === "Missing tenantId") {
-      return res
-        .status(400)
-        .json({ message: "Missing tenantId (x-tenant-id header is verplicht)" });
-    }
-    next(err);
+    await deleteVariant(tenantId, id);
+    res.status(204).send();
+  } catch (err: any) {
+    console.error("deleteVariantHandler error", err);
+    if (err.message === "Variant not found") return res.status(404).json({ message: err.message });
+    res.status(500).json({ message: err.message || "Failed to delete variant" });
   }
 }

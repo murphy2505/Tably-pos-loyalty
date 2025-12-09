@@ -10,7 +10,7 @@ import {
   apiGetProduct,
 } from "../../../api/pos/products";
 import type { Product as PosProduct } from "../../../api/pos/products";
-void [apiListProducts, apiCreateProduct, apiDeleteProduct];
+void [apiListProducts, apiCreateProduct, apiUpdateProduct, apiDeleteProduct];
 import { apiListCategories } from "../../../api/pos/categories";
 import { fetchRevenueGroups } from "../../../api/pos/revenueGroups";
 import { useParams } from "react-router-dom";

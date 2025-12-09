@@ -13,6 +13,8 @@ import stockRouter from "./routes/stock";
 import tablesRouter from "./routes/tables";
 import menusRouter from "./routes/menus";
 import menuItemsRouter from "./routes/menuItems";
+import modifiersRouter from "./routes/modifiers";
+import revenueGroupsRouter from "./routes/revenueGroups";
 import authMiddleware from "./middleware/auth";
 
 dotenv.config();
@@ -40,6 +42,8 @@ app.use("/pos/tables", authMiddleware, tablesRouter);
 // Menus and Menu Items core endpoints
 app.use("/pos/core/menus", authMiddleware, menusRouter);
 app.use("/pos/core/menu-items", authMiddleware, menuItemsRouter);
+app.use("/pos/core/modifiers", authMiddleware, modifiersRouter);
+app.use("/pos/core/revenue-groups", authMiddleware, revenueGroupsRouter);
 
 // ====== JSON ERROR HANDLERS ======
 app.use(

@@ -1,4 +1,3 @@
-import { z } from "zod";
 
 export async function listStock(tenantId: string) {
   // TODO: implement with DB/Prisma; for now, return empty list for tenant

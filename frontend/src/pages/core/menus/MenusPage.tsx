@@ -33,7 +33,24 @@ const MenusPage: React.FC = () => {
 
   async function handleCreate() {
     if (!newName.trim()) return;
-    await apiCreateMenu({ name: newName.trim() });
+    const name = newName.trim();
+    const base = name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+    // Ensure unique slug client-side by appending -2, -3, ... if needed
+    const existing = new Set(menus.map((m) => m.slug));
+    let slug = base || "menu";
+    if (existing.has(slug)) {
+      let i = 2;
+      while (existing.has(`${slug}-${i}`)) i++;
+      slug = `${slug}-${i}`;
+    }
+
+    await apiCreateMenu({ name, slug });
     setNewName("");
     load();
   }
