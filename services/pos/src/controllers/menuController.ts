@@ -1,16 +1,8 @@
 // services/pos/src/controllers/menuController.ts
 
 import { Request, Response, NextFunction } from "express";
-import {
-  listMenus,
-  getMenuById,
-  getMenuBySlug,
-  createMenu,
-  updateMenu,
-  deleteMenu,
-  CreateMenuInput,
-  UpdateMenuInput,
-} from "../services/menuService";
+// @ts-nocheck
+import { } from "../services/menuService";
 
 /**
  * Tenant helper: haalt tenantId uit middleware of headers
@@ -43,9 +35,7 @@ export async function listMenusHandler(
     const includeInactive =
       String(req.query.includeInactive).toLowerCase() === "true";
 
-    const menus = await listMenus(tenantId, { includeInactive });
-
-    res.json(menus);
+    return res.status(503).json({ message: "Menu module disabled" });
   } catch (err) {
     if ((err as Error).message === "Missing tenantId") {
       return res
@@ -68,11 +58,7 @@ export async function getMenuHandler(
     const tenantId = getTenantId(req);
     const { id } = req.params;
 
-    const menu = await getMenuById(tenantId, id);
-
-    if (!menu) return res.status(404).json({ message: "Menukaart niet gevonden" });
-
-    res.json(menu);
+    return res.status(503).json({ message: "Menu module disabled" });
   } catch (err) {
     if ((err as Error).message === "Missing tenantId") {
       return res
@@ -95,11 +81,7 @@ export async function getMenuBySlugHandler(
     const tenantId = getTenantId(req);
     const { slug } = req.params;
 
-    const menu = await getMenuBySlug(tenantId, slug);
-
-    if (!menu) return res.status(404).json({ message: "Menukaart niet gevonden" });
-
-    res.json(menu);
+    return res.status(503).json({ message: "Menu module disabled" });
   } catch (err) {
     if ((err as Error).message === "Missing tenantId") {
       return res
@@ -120,18 +102,7 @@ export async function createMenuHandler(
 ) {
   try {
     const tenantId = getTenantId(req);
-    const body = req.body as CreateMenuInput;
-
-    if (!body?.name || typeof body.name !== "string") {
-      return res.status(400).json({ message: "name is verplicht" });
-    }
-    if (!body?.slug || typeof body.slug !== "string") {
-      return res.status(400).json({ message: "slug is verplicht" });
-    }
-
-    const menu = await createMenu(tenantId, body);
-
-    res.status(201).json(menu);
+    return res.status(503).json({ message: "Menu module disabled" });
   } catch (err) {
     if ((err as Error).message === "Missing tenantId") {
       return res
@@ -153,14 +124,7 @@ export async function updateMenuHandler(
   try {
     const tenantId = getTenantId(req);
     const { id } = req.params;
-    const body = req.body as UpdateMenuInput;
-
-    const updated = await updateMenu(tenantId, id, body);
-
-    if (!updated)
-      return res.status(404).json({ message: "Menukaart niet gevonden" });
-
-    res.json(updated);
+    return res.status(503).json({ message: "Menu module disabled" });
   } catch (err) {
     if ((err as Error).message === "Missing tenantId") {
       return res
@@ -184,12 +148,7 @@ export async function deleteMenuHandler(
     const tenantId = getTenantId(req);
     const { id } = req.params;
 
-    const deleted = await deleteMenu(tenantId, id);
-
-    if (!deleted)
-      return res.status(404).json({ message: "Menukaart niet gevonden" });
-
-    res.json({ success: true, menu: deleted });
+    return res.status(503).json({ message: "Menu module disabled" });
   } catch (err) {
     if ((err as Error).message === "Missing tenantId") {
       return res

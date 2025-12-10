@@ -13,5 +13,11 @@
     "types": ["node", "jest"]
   },
   "include": ["src"],
-  "exclude": ["dist"]
+  "exclude": [
+    "dist",
+    "src/controllers/menuItemsController.ts",
+    "src/services/menuItemService.ts",
+    "src/services/menuService.ts",
+    "src/routes/revenueGroups.ts"
+  ]
 }

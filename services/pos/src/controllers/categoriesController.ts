@@ -20,7 +20,7 @@ export async function listCategories(req: Request, res: Response) {
 
     const categories = await prisma.category.findMany({
       where: { tenantId },
-      orderBy: { name: "asc" }, // sorteer gewoon op naam
+      orderBy: [{ order: "asc" }, { name: "asc" }],
     });
 
     res.json(categories);
@@ -43,11 +43,19 @@ export async function createCategory(req: Request, res: Response) {
       return res.status(400).json({ error: "Name is required" });
     }
 
+    // Bepaal volgende order voor deze tenant
+    const maxOrder = await prisma.category.aggregate({
+      where: { tenantId },
+      _max: { order: true },
+    });
+    const nextOrder = (maxOrder._max.order ?? 0) + 1;
+
     const category = await prisma.category.create({
       data: {
         tenantId,
         name,
         color: color ?? null,
+        order: nextOrder,
       },
     });
 

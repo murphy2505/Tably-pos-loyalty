@@ -45,7 +45,7 @@ export async function getProductById(req: Request, res: Response) {
       where: { id, tenantId },
       include: {
         category: true,
-        ProductVariant: true,
+        variants: true,
       },
     });
 
@@ -65,20 +65,10 @@ export async function createProduct(req: Request, res: Response) {
   try {
     const tenantId = getTenantId(req);
 
-    const {
-      name,
-      priceIncl,
-      price,
-      vatRate,
-      categoryId,
-      revenueGroupId,
-    } = req.body as {
+    const { name, vatRate, categoryId } = req.body as {
       name?: string;
-      priceIncl?: string | number;
-      price?: string | number;
       vatRate?: number;
       categoryId?: string;
-      revenueGroupId?: string | null;
     };
 
     if (!name || typeof name !== "string") {
@@ -89,25 +79,13 @@ export async function createProduct(req: Request, res: Response) {
       return res.status(400).json({ message: "categoryId is required" });
     }
 
-    const rawPrice = priceIncl ?? price;
-    if (rawPrice === undefined || rawPrice === null || rawPrice === "") {
-      return res
-        .status(400)
-        .json({ message: "priceIncl (or price) is required" });
-    }
-
-    const priceDecimal = new Prisma.Decimal(rawPrice.toString());
     const finalVatRate = typeof vatRate === "number" ? vatRate : 21;
 
     const data: Prisma.ProductUncheckedCreateInput = {
       tenantId,
       name,
       categoryId,
-      priceIncl: priceDecimal,
       vatRate: finalVatRate,
-      // alleen zetten als je dit veld in je schema hebt
-      // zo niet → haal deze regel weg
-      revenueGroupId: revenueGroupId ?? null,
     };
 
     const product = await prisma.product.create({
@@ -130,20 +108,10 @@ export async function updateProduct(req: Request, res: Response) {
     const tenantId = getTenantId(req);
     const { id } = req.params;
 
-    const {
-      name,
-      priceIncl,
-      price,
-      vatRate,
-      categoryId,
-      revenueGroupId,
-    } = req.body as {
+    const { name, vatRate, categoryId } = req.body as {
       name?: string;
-      priceIncl?: string | number;
-      price?: string | number;
       vatRate?: number;
       categoryId?: string;
-      revenueGroupId?: string | null;
     };
 
     const existing = await prisma.product.findFirst({
@@ -160,11 +128,6 @@ export async function updateProduct(req: Request, res: Response) {
       data.name = name;
     }
 
-    const rawPrice = priceIncl ?? price;
-    if (rawPrice !== undefined && rawPrice !== null && rawPrice !== "") {
-      data.priceIncl = new Prisma.Decimal(rawPrice.toString());
-    }
-
     if (typeof vatRate === "number") {
       data.vatRate = vatRate;
     }
@@ -173,10 +136,6 @@ export async function updateProduct(req: Request, res: Response) {
       data.categoryId = categoryId;
     }
 
-    if (typeof revenueGroupId === "string" || revenueGroupId === null) {
-      // alleen zetten als veld in schema bestaat
-      data.revenueGroupId = revenueGroupId as any;
-    }
 
     const product = await prisma.product.update({
       where: { id: existing.id },

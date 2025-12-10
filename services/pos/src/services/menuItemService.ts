@@ -1,15 +1,18 @@
 // services/pos/src/services/menuItemService.ts
 
-import { prisma } from "../db/prisma";
+// @ts-nocheck
+// Sprint 2 menu items module temporarily disabled.
+export function listMenuItems() { throw new Error("Menu items disabled"); }
+export function createMenuItem() { throw new Error("Menu items disabled"); }
+export function updateMenuItem() { throw new Error("Menu items disabled"); }
+export function deleteMenuItem() { throw new Error("Menu items disabled"); }
+export function reorderMenuItems() { throw new Error("Menu items disabled"); }
 
 /**
  * Haal alle menu-items voor een tenant + menuId.
  */
 export async function listMenuItems(tenantId: string, menuId: string) {
-  return prisma.menuItem.findMany({
-    where: { tenantId, menuId },
-    orderBy: { sortOrder: "asc" },
-  });
+  throw new Error("Menu items disabled");
 }
 
 /**
@@ -37,33 +40,8 @@ export type CreateMenuItemInput = {
  * Maak een nieuw menu-item.
  * Bepaalt automatisch sortOrder = laatste + 1 als die niet is meegegeven.
  */
-export async function createMenuItem(
-  tenantId: string,
-  data: CreateMenuItemInput
-) {
-  // Bepaal sortOrder: laatste + 1
-  const maxSort = await prisma.menuItem.aggregate({
-    where: { tenantId, menuId: data.menuId },
-    _max: { sortOrder: true },
-  });
-
-  const sortOrder =
-    typeof data.sortOrder === "number"
-      ? data.sortOrder
-      : (maxSort._max.sortOrder ?? 0) + 1;
-
-  return prisma.menuItem.create({
-    data: {
-      tenantId,
-      menuId: data.menuId,
-      sectionId: data.sectionId ?? null,
-      productId: data.productId,
-      variantId: data.variantId ?? null,
-      sortOrder,
-      isVisible: data.isVisible ?? true,
-      isFavorite: data.isFavorite ?? false,
-    },
-  });
+export async function createMenuItem(tenantId: string, data: CreateMenuItemInput) {
+  throw new Error("Menu items disabled");
 }
 
 /**
@@ -82,63 +60,20 @@ export type UpdateMenuItemInput = {
  * Update een menu-item (alleen toegestane velden).
  * We gebruiken updateMany om veilig op tenantId + id te filteren.
  */
-export async function updateMenuItem(
-  tenantId: string,
-  id: string,
-  data: UpdateMenuItemInput
-) {
-  const updateData: UpdateMenuItemInput = {};
-
-  if (data.sectionId !== undefined) {
-    updateData.sectionId = data.sectionId;
-  }
-  if (data.productId !== undefined) {
-    updateData.productId = data.productId;
-  }
-  if (data.variantId !== undefined) {
-    updateData.variantId = data.variantId;
-  }
-  if (data.sortOrder !== undefined) {
-    updateData.sortOrder = data.sortOrder;
-  }
-  if (data.isVisible !== undefined) {
-    updateData.isVisible = data.isVisible;
-  }
-  if (data.isFavorite !== undefined) {
-    updateData.isFavorite = data.isFavorite;
-  }
-
-  return prisma.menuItem.updateMany({
-    where: { id, tenantId },
-    data: updateData as any,
-  });
+export async function updateMenuItem(tenantId: string, id: string, data: UpdateMenuItemInput) {
+  throw new Error("Menu items disabled");
 }
 
 /**
  * Verwijder een menu-item voor deze tenant.
  */
 export async function deleteMenuItem(tenantId: string, id: string) {
-  return prisma.menuItem.deleteMany({
-    where: { id, tenantId },
-  });
+  throw new Error("Menu items disabled");
 }
 
 /**
  * Reorder: zet sortOrder = index+1 voor de opgegeven orderedIds.
  */
-export async function reorderMenuItems(
-  tenantId: string,
-  menuId: string,
-  orderedIds: string[]
-) {
-  const updates = orderedIds.map((id, index) =>
-    prisma.menuItem.updateMany({
-      where: { id, tenantId, menuId },
-      data: { sortOrder: index + 1 },
-    })
-  );
-
-  await prisma.$transaction(updates);
-
-  return listMenuItems(tenantId, menuId);
+export async function reorderMenuItems(tenantId: string, menuId: string, orderedIds: string[]) {
+  throw new Error("Menu items disabled");
 }

@@ -45,11 +45,7 @@ export async function listProducts(
   return prisma.product.findMany({
     where: baseWhere(tenantId),
     orderBy: { name: "asc" },
-    include: {
-      category: true,
-      RevenueGroup: true,
-      ProductVariant: true,
-    },
+    include: { category: true },
   });
 }
 
@@ -59,11 +55,7 @@ export async function listProducts(
 export async function getProductById(tenantId: string, id: string) {
   return prisma.product.findFirst({
     where: baseWhere(tenantId, { id }),
-    include: {
-      category: true,
-      RevenueGroup: true,
-      ProductVariant: true,
-    },
+    include: { category: true },
   });
 }
 
@@ -79,10 +71,8 @@ export async function createProduct(
       tenantId,
       name: data.name.trim(),
       categoryId: data.categoryId,
-      revenueGroupId: data.revenueGroupId ?? null,
-      priceIncl: (data.priceIncl ?? 0) as any,
       vatRate: Math.trunc(data.vatRate ?? 0),
-    },
+    } as any,
   });
 }
 
@@ -109,9 +99,6 @@ export async function updateProduct(
       ...(data.name !== undefined && { name: data.name.trim() }),
       ...(data.categoryId !== undefined && {
         categoryId: data.categoryId,
-      }),
-      ...(data.revenueGroupId !== undefined && {
-        revenueGroupId: data.revenueGroupId,
       }),
       ...(data.priceIncl !== undefined && { priceIncl: data.priceIncl as any }),
       ...(data.vatRate !== undefined && { vatRate: Math.trunc(data.vatRate as number) }),
